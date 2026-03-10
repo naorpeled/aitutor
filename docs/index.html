@@ -91,6 +91,33 @@
       text-decoration-color: var(--accent);
     }
 
+    /* ── Install tabs ── */
+    .install-tabs {
+      display: inline-flex;
+      gap: 4px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 3px;
+      margin-bottom: 12px;
+    }
+    .install-tab {
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      font-family: inherit;
+      font-size: 13px;
+      padding: 6px 16px;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .install-tab:hover { color: var(--text-dim); }
+    .install-tab.active {
+      background: rgba(122,162,247,0.12);
+      color: var(--accent);
+    }
+
     .install-box {
       background: var(--surface);
       border: 1px solid var(--border);
@@ -266,6 +293,7 @@
     }
     @media (max-width: 380px) {
       .install-box { font-size: 11px; padding: 10px 12px; gap: 8px; }
+      .install-tab { font-size: 12px; padding: 5px 12px; }
       .tier-item { font-size: 12px; padding: 6px 10px; }
     }
   </style>
@@ -282,17 +310,22 @@
     <p class="tagline sans">
       Learn AI coding concepts interactively in your terminal — context windows, MCP, tools, subagents, and more. Like <span style="color:var(--text);font-family:'SF Mono','Fira Code','JetBrains Mono',monospace;background:rgba(122,162,247,0.1);padding:2px 7px;border-radius:4px;font-size:0.9em;">vimtutor</span>, but for AI&#8209;assisted development.
     </p>
+    <div class="install-tabs">
+      <button class="install-tab active" onclick="switchTab('npm')">npm</button>
+      <button class="install-tab" onclick="switchTab('brew')">Homebrew</button>
+      <button class="install-tab" onclick="switchTab('go')">Go</button>
+    </div>
+
     <div class="install-box" onclick="copyInstall()" title="Click to copy">
       <span class="prompt">$</span>
-      <code>go install github.com/naorpeled/aitutor@latest</code>
+      <code id="installCmd">npx @aitutor/cli</code>
       <button class="copy-btn" id="copyBtn">Copy</button>
     </div>
 
-    <p style="margin-bottom: 10px; font-size: 15px; color: var(--text-dim);">
-      Then run <code style="color:var(--green);background:rgba(158,206,106,0.1);padding:3px 10px;border-radius:5px;border:1px solid rgba(158,206,106,0.2);font-size:15px;">aitutor</code> to start learning.
+    <p id="installNote" style="margin-bottom: 10px; font-size: 13px; color: var(--text-dim);">
+      No install needed — runs directly.
     </p>
     <p class="install-sub">
-      Requires Go 1.23+&ensp;·&ensp;
       <a href="https://github.com/naorpeled/aitutor" target="_blank" rel="noopener">View on GitHub →</a>
     </p>
   </section>
@@ -374,8 +407,24 @@
   </footer>
 
   <script>
+    var tabs = {
+      npm:  { cmd: 'npx @aitutor/cli', note: 'No install needed \u2014 runs directly.' },
+      brew: { cmd: 'brew install naorpeled/tap/aitutor', note: 'Then run <code style="color:var(--green);background:rgba(158,206,106,0.1);padding:2px 8px;border-radius:4px;border:1px solid rgba(158,206,106,0.15);font-size:13px;">aitutor</code> to start.' },
+      go:   { cmd: 'go install github.com/naorpeled/aitutor@latest', note: 'Requires Go 1.23+. Then run <code style="color:var(--green);background:rgba(158,206,106,0.1);padding:2px 8px;border-radius:4px;border:1px solid rgba(158,206,106,0.15);font-size:13px;">aitutor</code> to start.' }
+    };
+    var activeTab = 'npm';
+
+    function switchTab(name) {
+      activeTab = name;
+      document.querySelectorAll('.install-tab').forEach(function(el) { el.classList.remove('active'); });
+      document.querySelector('.install-tab[onclick="switchTab(\'' + name + '\')"]').classList.add('active');
+      document.getElementById('installCmd').textContent = tabs[name].cmd;
+      document.getElementById('installNote').innerHTML = tabs[name].note;
+      document.getElementById('copyBtn').textContent = 'Copy';
+    }
+
     function copyInstall() {
-      navigator.clipboard.writeText('go install github.com/naorpeled/aitutor@latest').then(function() {
+      navigator.clipboard.writeText(tabs[activeTab].cmd).then(function() {
         var btn = document.getElementById('copyBtn');
         btn.textContent = 'Copied!';
         setTimeout(function() { btn.textContent = 'Copy'; }, 2000);
