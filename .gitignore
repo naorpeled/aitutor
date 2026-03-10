@@ -1,2 +1,5 @@
 aitutor
+aitutor.exe
+node_modules/
+dist/
 .superpowers/
