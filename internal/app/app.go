@@ -285,7 +285,10 @@ func (m AppModel) viewWelcome() string {
  /_/   \_\___| |_| \__,_|\__\___/|_|`)
 
 	var lines []string
-	lines = append(lines, m.anim.View())
+	// Only show animation if terminal is tall enough (animation adds ~8 lines)
+	if m.height >= 35 {
+		lines = append(lines, m.anim.View())
+	}
 	lines = append(lines, logo)
 	lines = append(lines, "")
 	tagline := "Interactive AI Coding Concepts Tutorial"
