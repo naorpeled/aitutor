@@ -149,29 +149,33 @@ func (m *AgenticLoopModel) View() string {
 	lines = append(lines, "")
 
 	// Loop diagram — highlight current phase
-	phases := []struct {
-		name  string
-		arrow string
-	}{
-		{"Read", " ──> "},
-		{"Think", " ──> "},
-		{"Act", " ──> "},
-		{"Observe", " ──┐"},
+	phaseNames := []string{"Read", "Think", "Act", "Observe"}
+	phaseStyle := func(i int) lipgloss.Style {
+		if loopPhase(i) == m.phase && !m.done {
+			return bright
+		} else if loopPhase(i) < m.phase || m.iterIdx > 0 || m.done {
+			return green
+		}
+		return dim
 	}
 
-	var loopParts []string
-	for i, p := range phases {
-		style := dim
-		if loopPhase(i) == m.phase && !m.done {
-			style = bright
-		} else if loopPhase(i) < m.phase || m.iterIdx > 0 || m.done {
-			style = green
-		}
-		loopParts = append(loopParts, style.Render(p.name)+dim.Render(p.arrow))
+	topLine := fmt.Sprintf("  %s ──> %s ──> %s ──> %s",
+		phaseStyle(0).Render(phaseNames[0]),
+		phaseStyle(1).Render(phaseNames[1]),
+		phaseStyle(2).Render(phaseNames[2]),
+		phaseStyle(3).Render(phaseNames[3]))
+
+	// Measure visual width and draw matching borders
+	plainTop := fmt.Sprintf("  %s ──> %s ──> %s ──> %s",
+		phaseNames[0], phaseNames[1], phaseNames[2], phaseNames[3])
+	borderLen := len(plainTop) - 2 // subtract leading spaces
+	if borderLen < 20 {
+		borderLen = 20
 	}
-	lines = append(lines, "  "+strings.Join(loopParts[:3], ""))
-	lines = append(lines, "  "+loopParts[3])
-	lines = append(lines, dim.Render("  └──────────────────────────────────────┘"))
+
+	lines = append(lines, dim.Render("  ┌"+strings.Repeat("─", borderLen)+"┐"))
+	lines = append(lines, topLine+dim.Render(" ─┤"))
+	lines = append(lines, dim.Render("  └"+strings.Repeat("─", borderLen)+"┘"))
 	lines = append(lines, "")
 
 	// Iteration counter

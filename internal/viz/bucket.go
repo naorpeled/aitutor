@@ -730,7 +730,12 @@ func (m *BucketModel) viewNormal() string {
 		}
 		bar := style.Render(strings.Repeat("█", filled)) + dim.Render(strings.Repeat("░", barWidth-filled))
 		pctStr := fmt.Sprintf("%.0f%%", ratio*100)
-		return fmt.Sprintf("  %-15s %s %5s %s", style.Render(label), bar, dim.Render(pctStr), dim.Render(formatTokens(tokens)))
+		// Pad the label to 13 chars BEFORE styling to avoid ANSI codes breaking alignment
+		padded := label + strings.Repeat(" ", 13-len(label))
+		if len(label) > 13 {
+			padded = label
+		}
+		return fmt.Sprintf("  %s %s %5s %s", style.Render(padded), bar, dim.Render(pctStr), dim.Render(formatTokens(tokens)))
 	}
 
 	lines = append(lines, dim.Render("  ── Context Breakdown ──"))
