@@ -7,6 +7,7 @@ import (
 	"github.com/charmbracelet/bubbles/key"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
+	"github.com/naorpeled/aitutor/internal/ui"
 )
 
 type loopPhase int
@@ -122,7 +123,6 @@ func (m *AgenticLoopModel) Update(msg tea.Msg) (Model, tea.Cmd) {
 					m.done = true
 				}
 			}
-			m.revealed = false
 		case key.Matches(msg, key.NewBinding(key.WithKeys("r"))):
 			m.iterIdx = 0
 			m.phase = loopRead
@@ -134,13 +134,13 @@ func (m *AgenticLoopModel) Update(msg tea.Msg) (Model, tea.Cmd) {
 }
 
 func (m *AgenticLoopModel) View() string {
-	accent := lipgloss.NewStyle().Foreground(lipgloss.Color("#818cf8")).Bold(true)
-	dim := lipgloss.NewStyle().Foreground(lipgloss.Color("#6b7280"))
-	bright := lipgloss.NewStyle().Foreground(lipgloss.Color("#f9fafb")).Bold(true)
-	green := lipgloss.NewStyle().Foreground(lipgloss.Color("#4ade80")).Bold(true)
-	yellow := lipgloss.NewStyle().Foreground(lipgloss.Color("#facc15"))
-	red := lipgloss.NewStyle().Foreground(lipgloss.Color("#f87171")).Bold(true)
-	blue := lipgloss.NewStyle().Foreground(lipgloss.Color("#38bdf8")).Bold(true)
+	accent := lipgloss.NewStyle().Foreground(ui.ColorAccent).Bold(true)
+	dim := lipgloss.NewStyle().Foreground(ui.ColorMuted)
+	bright := lipgloss.NewStyle().Foreground(ui.ColorBright).Bold(true)
+	green := lipgloss.NewStyle().Foreground(ui.ColorBeginner).Bold(true)
+	yellow := lipgloss.NewStyle().Foreground(ui.ColorIntermediate)
+	red := lipgloss.NewStyle().Foreground(ui.ColorAdvanced).Bold(true)
+	blue := lipgloss.NewStyle().Foreground(ui.ColorHighlight).Bold(true)
 	codeStyle := lipgloss.NewStyle().Foreground(lipgloss.Color("#a5f3fc"))
 
 	var lines []string

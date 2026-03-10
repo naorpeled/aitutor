@@ -23,14 +23,22 @@ npm install -g aitutor
 aitutor
 ```
 
-### With Go
+### Homebrew
+
+```bash
+brew tap naorpeled/tap
+brew install aitutor
+aitutor
+```
+
+### Go
 
 ```bash
 go install github.com/naorpeled/aitutor@latest
 aitutor
 ```
 
-Or build from source:
+### Build from source
 
 ```bash
 git clone https://github.com/naorpeled/aitutor.git

@@ -7,6 +7,7 @@ import (
 	"github.com/charmbracelet/bubbles/key"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
+	"github.com/naorpeled/aitutor/internal/ui"
 )
 
 type subagent struct {
@@ -21,7 +22,6 @@ type FanoutModel struct {
 	width  int
 	height int
 	agents []subagent
-	tick   int
 }
 
 func NewFanoutModel(w, h int) Model {
@@ -75,11 +75,11 @@ func (m *FanoutModel) Update(msg tea.Msg) (Model, tea.Cmd) {
 }
 
 func (m *FanoutModel) View() string {
-	accent := lipgloss.NewStyle().Foreground(lipgloss.Color("#818cf8")).Bold(true)
-	green := lipgloss.NewStyle().Foreground(lipgloss.Color("#4ade80"))
-	yellow := lipgloss.NewStyle().Foreground(lipgloss.Color("#facc15"))
-	dim := lipgloss.NewStyle().Foreground(lipgloss.Color("#6b7280"))
-	blue := lipgloss.NewStyle().Foreground(lipgloss.Color("#38bdf8"))
+	accent := lipgloss.NewStyle().Foreground(ui.ColorAccent).Bold(true)
+	green := lipgloss.NewStyle().Foreground(ui.ColorBeginner)
+	yellow := lipgloss.NewStyle().Foreground(ui.ColorIntermediate)
+	dim := lipgloss.NewStyle().Foreground(ui.ColorMuted)
+	blue := lipgloss.NewStyle().Foreground(ui.ColorHighlight)
 
 	var lines []string
 	lines = append(lines, "")

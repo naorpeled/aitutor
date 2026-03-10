@@ -7,6 +7,7 @@ import (
 	"github.com/charmbracelet/bubbles/key"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
+	"github.com/naorpeled/aitutor/internal/ui"
 )
 
 type agentAction struct {
@@ -20,7 +21,6 @@ type AgentLoopModel struct {
 	width   int
 	height  int
 	step    int
-	loop    int // which iteration of the loop
 	actions []agentAction
 }
 
@@ -65,11 +65,11 @@ func (m *AgentLoopModel) Update(msg tea.Msg) (Model, tea.Cmd) {
 }
 
 func (m *AgentLoopModel) View() string {
-	active := lipgloss.NewStyle().Foreground(lipgloss.Color("#4ade80")).Bold(true)
-	current := lipgloss.NewStyle().Foreground(lipgloss.Color("#38bdf8")).Bold(true)
-	dim := lipgloss.NewStyle().Foreground(lipgloss.Color("#6b7280"))
-	accent := lipgloss.NewStyle().Foreground(lipgloss.Color("#818cf8")).Bold(true)
-	detail := lipgloss.NewStyle().Foreground(lipgloss.Color("#facc15"))
+	active := lipgloss.NewStyle().Foreground(ui.ColorBeginner).Bold(true)
+	current := lipgloss.NewStyle().Foreground(ui.ColorHighlight).Bold(true)
+	dim := lipgloss.NewStyle().Foreground(ui.ColorMuted)
+	accent := lipgloss.NewStyle().Foreground(ui.ColorAccent).Bold(true)
+	detail := lipgloss.NewStyle().Foreground(ui.ColorIntermediate)
 	desc := lipgloss.NewStyle().Foreground(lipgloss.Color("#d1d5db"))
 
 	phases := []string{"User Request", "Read Context", "Reason & Plan", "Take Action", "Observe Result", "Response"}

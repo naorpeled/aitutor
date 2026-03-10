@@ -7,6 +7,7 @@ import (
 	"github.com/charmbracelet/bubbles/key"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
+	"github.com/naorpeled/aitutor/internal/ui"
 )
 
 type memoryItem struct {
@@ -17,8 +18,6 @@ type memoryItem struct {
 
 // MemorySortModel lets users categorize items as save vs don't-save.
 type MemorySortModel struct {
-	width     int
-	height    int
 	items     []memoryItem
 	current   int
 	submitted bool
@@ -27,8 +26,6 @@ type MemorySortModel struct {
 
 func NewMemorySortModel(w, h int) Model {
 	return &MemorySortModel{
-		width:  w,
-		height: h,
 		items: []memoryItem{
 			{Text: "Always use bun instead of npm", ShouldSave: true},
 			{Text: "The current task is to fix bug #423", ShouldSave: false},
@@ -100,13 +97,13 @@ func (m *MemorySortModel) Update(msg tea.Msg) (Model, tea.Cmd) {
 }
 
 func (m *MemorySortModel) View() string {
-	accent := lipgloss.NewStyle().Foreground(lipgloss.Color("#818cf8")).Bold(true)
-	good := lipgloss.NewStyle().Foreground(lipgloss.Color("#4ade80")).Bold(true)
-	bad := lipgloss.NewStyle().Foreground(lipgloss.Color("#f87171")).Bold(true)
-	save := lipgloss.NewStyle().Foreground(lipgloss.Color("#4ade80")).Bold(true)
-	skip := lipgloss.NewStyle().Foreground(lipgloss.Color("#facc15")).Bold(true)
-	highlight := lipgloss.NewStyle().Foreground(lipgloss.Color("#38bdf8")).Bold(true)
-	dim := lipgloss.NewStyle().Foreground(lipgloss.Color("#6b7280"))
+	accent := lipgloss.NewStyle().Foreground(ui.ColorAccent).Bold(true)
+	good := lipgloss.NewStyle().Foreground(ui.ColorCorrect).Bold(true)
+	bad := lipgloss.NewStyle().Foreground(ui.ColorIncorrect).Bold(true)
+	save := lipgloss.NewStyle().Foreground(ui.ColorBeginner).Bold(true)
+	skip := lipgloss.NewStyle().Foreground(ui.ColorIntermediate).Bold(true)
+	highlight := lipgloss.NewStyle().Foreground(ui.ColorHighlight).Bold(true)
+	dim := lipgloss.NewStyle().Foreground(ui.ColorMuted)
 	text := lipgloss.NewStyle().Foreground(lipgloss.Color("#d1d5db"))
 
 	var lines []string

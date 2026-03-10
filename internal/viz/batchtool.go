@@ -7,6 +7,7 @@ import (
 	"github.com/charmbracelet/bubbles/key"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
+	"github.com/naorpeled/aitutor/internal/ui"
 )
 
 type batchTool struct {
@@ -127,14 +128,13 @@ func (m *BatchToolModel) Update(msg tea.Msg) (Model, tea.Cmd) {
 }
 
 func (m *BatchToolModel) View() string {
-	accent := lipgloss.NewStyle().Foreground(lipgloss.Color("#818cf8")).Bold(true)
-	done := lipgloss.NewStyle().Foreground(lipgloss.Color("#4ade80")).Bold(true)
-	pending := lipgloss.NewStyle().Foreground(lipgloss.Color("#6b7280"))
-	highlight := lipgloss.NewStyle().Foreground(lipgloss.Color("#38bdf8")).Bold(true)
-	dim := lipgloss.NewStyle().Foreground(lipgloss.Color("#6b7280"))
-	yellow := lipgloss.NewStyle().Foreground(lipgloss.Color("#facc15"))
-	greenStyle := lipgloss.NewStyle().Foreground(lipgloss.Color("#4ade80")).Bold(true)
-	redStyle := lipgloss.NewStyle().Foreground(lipgloss.Color("#f87171")).Bold(true)
+	accent := lipgloss.NewStyle().Foreground(ui.ColorAccent).Bold(true)
+	done := lipgloss.NewStyle().Foreground(ui.ColorCorrect).Bold(true)
+	pending := lipgloss.NewStyle().Foreground(ui.ColorMuted)
+	highlight := lipgloss.NewStyle().Foreground(ui.ColorHighlight).Bold(true)
+	dim := lipgloss.NewStyle().Foreground(ui.ColorMuted)
+	yellow := lipgloss.NewStyle().Foreground(ui.ColorIntermediate)
+	redStyle := lipgloss.NewStyle().Foreground(ui.ColorIncorrect).Bold(true)
 	orange := lipgloss.NewStyle().Foreground(lipgloss.Color("#f97316"))
 
 	var lines []string
@@ -170,7 +170,7 @@ func (m *BatchToolModel) View() string {
 				style = highlight
 			}
 
-			policy := greenStyle.Render("⚡ batchable")
+			policy := done.Render("⚡ batchable")
 			if !t.Batchable {
 				policy = orange.Render("🔒 sequential")
 			}
@@ -186,7 +186,7 @@ func (m *BatchToolModel) View() string {
 		for i, group := range m.plan {
 			roundLabel := fmt.Sprintf("  Round %d:", i+1)
 			if len(group) > 1 {
-				roundLabel = greenStyle.Render(roundLabel)
+				roundLabel = done.Render(roundLabel)
 			} else {
 				roundLabel = yellow.Render(roundLabel)
 			}
@@ -199,7 +199,7 @@ func (m *BatchToolModel) View() string {
 
 			parallel := ""
 			if len(group) > 1 {
-				parallel = greenStyle.Render(fmt.Sprintf(" [%d in parallel]", len(group)))
+				parallel = done.Render(fmt.Sprintf(" [%d in parallel]", len(group)))
 			} else {
 				parallel = dim.Render(" [alone]")
 			}
@@ -269,12 +269,12 @@ func (m *BatchToolModel) View() string {
 		if m.phase == 2 {
 			// All done — show savings
 			seqTrips := len(m.tools) // if everything were sequential
-			lines = append(lines, greenStyle.Render(fmt.Sprintf("  Done! %d round trips (vs %d if all sequential)",
+			lines = append(lines, done.Render(fmt.Sprintf("  Done! %d round trips (vs %d if all sequential)",
 				len(m.plan), seqTrips)))
 
 			saved := seqTrips - len(m.plan)
 			if saved > 0 {
-				lines = append(lines, greenStyle.Render(fmt.Sprintf("  Saved %d round trips by batching!", saved)))
+				lines = append(lines, done.Render(fmt.Sprintf("  Saved %d round trips by batching!", saved)))
 			} else {
 				lines = append(lines, redStyle.Render("  No savings — try enabling batch on more tools!"))
 			}

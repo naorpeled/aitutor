@@ -6,6 +6,7 @@ import (
 	"github.com/charmbracelet/bubbles/key"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
+	"github.com/naorpeled/aitutor/internal/ui"
 )
 
 // LifecycleModel shows the hooks lifecycle timeline.
@@ -38,11 +39,11 @@ func (m *LifecycleModel) Update(msg tea.Msg) (Model, tea.Cmd) {
 }
 
 func (m *LifecycleModel) View() string {
-	active := lipgloss.NewStyle().Foreground(lipgloss.Color("#4ade80")).Bold(true)
-	hook := lipgloss.NewStyle().Foreground(lipgloss.Color("#facc15")).Bold(true)
-	dim := lipgloss.NewStyle().Foreground(lipgloss.Color("#6b7280"))
-	highlight := lipgloss.NewStyle().Foreground(lipgloss.Color("#38bdf8"))
-	blocked := lipgloss.NewStyle().Foreground(lipgloss.Color("#f87171")).Bold(true)
+	active := lipgloss.NewStyle().Foreground(ui.ColorBeginner).Bold(true)
+	hook := lipgloss.NewStyle().Foreground(ui.ColorIntermediate).Bold(true)
+	dim := lipgloss.NewStyle().Foreground(ui.ColorMuted)
+	highlight := lipgloss.NewStyle().Foreground(ui.ColorHighlight)
+	blocked := lipgloss.NewStyle().Foreground(ui.ColorAdvanced).Bold(true)
 
 	type event struct {
 		label    string

@@ -7,6 +7,7 @@ import (
 	"github.com/charmbracelet/bubbles/key"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
+	"github.com/naorpeled/aitutor/internal/ui"
 )
 
 type worktreeEntry struct {
@@ -22,14 +23,12 @@ type WorktreeSimModel struct {
 	height    int
 	worktrees []worktreeEntry
 	cursor    int
-	phase     int // 0=main, 1=add, 2=switch, 3=remove
-	addStep   int
 }
 
 var worktreeTemplates = []worktreeEntry{
-	{Branch: "feature/auth", Path: "../wt/feature-auth", Agent: "Agent 1", Color: lipgloss.Color("#38bdf8")},
-	{Branch: "fix/bug-42", Path: "../wt/fix-bug-42", Agent: "Agent 2", Color: lipgloss.Color("#facc15")},
-	{Branch: "refactor/api", Path: "../wt/refactor-api", Agent: "Agent 3", Color: lipgloss.Color("#818cf8")},
+	{Branch: "feature/auth", Path: "../wt/feature-auth", Agent: "Agent 1", Color: ui.ColorHighlight},
+	{Branch: "fix/bug-42", Path: "../wt/fix-bug-42", Agent: "Agent 2", Color: ui.ColorIntermediate},
+	{Branch: "refactor/api", Path: "../wt/refactor-api", Agent: "Agent 3", Color: ui.ColorAccent},
 }
 
 func NewWorktreeSimModel(w, h int) Model {
@@ -37,7 +36,7 @@ func NewWorktreeSimModel(w, h int) Model {
 		width: w,
 		height: h,
 		worktrees: []worktreeEntry{
-			{Branch: "main", Path: "~/project", Agent: "You", Color: lipgloss.Color("#4ade80")},
+			{Branch: "main", Path: "~/project", Agent: "You", Color: ui.ColorBeginner},
 		},
 	}
 }
@@ -69,7 +68,7 @@ func (m *WorktreeSimModel) Update(msg tea.Msg) (Model, tea.Cmd) {
 			}
 		case key.Matches(msg, key.NewBinding(key.WithKeys("r"))):
 			m.worktrees = []worktreeEntry{
-				{Branch: "main", Path: "~/project", Agent: "You", Color: lipgloss.Color("#4ade80")},
+				{Branch: "main", Path: "~/project", Agent: "You", Color: ui.ColorBeginner},
 			}
 			m.cursor = 0
 		}
@@ -78,10 +77,10 @@ func (m *WorktreeSimModel) Update(msg tea.Msg) (Model, tea.Cmd) {
 }
 
 func (m *WorktreeSimModel) View() string {
-	accent := lipgloss.NewStyle().Foreground(lipgloss.Color("#818cf8")).Bold(true)
-	active := lipgloss.NewStyle().Foreground(lipgloss.Color("#4ade80")).Bold(true)
-	highlight := lipgloss.NewStyle().Foreground(lipgloss.Color("#38bdf8")).Bold(true)
-	dim := lipgloss.NewStyle().Foreground(lipgloss.Color("#6b7280"))
+	accent := lipgloss.NewStyle().Foreground(ui.ColorAccent).Bold(true)
+	active := lipgloss.NewStyle().Foreground(ui.ColorCorrect).Bold(true)
+	highlight := lipgloss.NewStyle().Foreground(ui.ColorHighlight).Bold(true)
+	dim := lipgloss.NewStyle().Foreground(ui.ColorMuted)
 
 	var lines []string
 	lines = append(lines, "")
