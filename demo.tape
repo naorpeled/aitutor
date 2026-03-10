@@ -10,10 +10,11 @@ Set Height 700
 Set Theme "Catppuccin Mocha"
 Set TypingSpeed 50ms
 
-# Start
+Hide
 Type "go run ."
 Enter
 Sleep 3s
+Show
 
 # Welcome screen — admire it
 Sleep 2.5s
@@ -127,7 +128,6 @@ Tab
 Sleep 1s
 
 # Jump to agentic loop lesson (lesson 15, intermediate)
-# Navigate: currently on lesson 2, need to go forward
 Type "n"
 Sleep 0.5s
 Type "n"
