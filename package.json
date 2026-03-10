@@ -19,5 +19,9 @@
   "keywords": ["ai", "tutorial", "coding", "terminal", "tui", "vimtutor", "learning"],
   "author": "Naor Peled",
   "license": "MIT",
-  "homepage": "https://github.com/naorpeled/aitutor"
+  "homepage": "https://github.com/naorpeled/aitutor",
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  }
 }
