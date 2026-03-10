@@ -10,6 +10,21 @@ Interactive terminal-based tutorial for AI coding concepts. Learn context window
 
 ## Install
 
+No setup needed — just run:
+
+```bash
+npx aitutor
+```
+
+Or install globally:
+
+```bash
+npm install -g aitutor
+aitutor
+```
+
+### With Go
+
 ```bash
 go install github.com/naorpeled/aitutor@latest
 aitutor

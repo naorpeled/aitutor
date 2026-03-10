@@ -1,0 +1,23 @@
+{
+  "name": "aitutor",
+  "version": "0.1.0",
+  "description": "Interactive terminal-based tutorial for AI coding concepts — like vimtutor, but for AI-assisted development",
+  "bin": {
+    "aitutor": "run.js"
+  },
+  "scripts": {
+    "postinstall": "node install.js"
+  },
+  "files": [
+    "install.js",
+    "run.js"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/naorpeled/aitutor.git"
+  },
+  "keywords": ["ai", "tutorial", "coding", "terminal", "tui", "vimtutor", "learning"],
+  "author": "Naor Peled",
+  "license": "MIT",
+  "homepage": "https://github.com/naorpeled/aitutor"
+}
