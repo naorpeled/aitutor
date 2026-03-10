@@ -99,15 +99,16 @@
       display: inline-flex;
       align-items: center;
       gap: 14px;
-      font-size: clamp(13px, 2vw, 15px);
+      font-size: clamp(12px, 2vw, 15px);
       margin-bottom: 16px;
       transition: border-color 0.2s;
       cursor: pointer;
       position: relative;
+      max-width: 100%;
     }
     .install-box:hover { border-color: var(--accent); }
     .install-box .prompt { color: var(--green); user-select: none; }
-    .install-box code { color: var(--text); white-space: nowrap; }
+    .install-box code { color: var(--text); word-break: break-all; }
     .install-box .copy-btn {
       background: none;
       border: 1px solid var(--border);
@@ -182,15 +183,15 @@
     }
     .feature:hover { border-color: var(--border-hover); transform: translateY(-2px); }
     .feature-icon {
-      width: 40px;
-      height: 40px;
-      border-radius: 8px;
+      width: 44px;
+      height: 44px;
+      border-radius: 10px;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 18px;
       margin-bottom: 16px;
     }
+    .feature-icon svg { width: 22px; height: 22px; }
     .feature-icon.theory { background: rgba(122,162,247,0.12); color: var(--accent); }
     .feature-icon.viz { background: rgba(158,206,106,0.12); color: var(--green); }
     .feature-icon.quiz { background: rgba(187,154,247,0.12); color: var(--purple); }
@@ -250,13 +251,22 @@
     /* ── Responsive ── */
     @media (max-width: 700px) {
       .features { grid-template-columns: 1fr; gap: 12px; }
-      .hero { min-height: 80vh; padding: 40px 16px 32px; }
-      .install-box { padding: 12px 14px; gap: 10px; }
+      .hero { min-height: auto; padding: 60px 16px 40px; }
+      .install-box {
+        padding: 12px 14px;
+        gap: 10px;
+        flex-wrap: wrap;
+        justify-content: center;
+      }
+      .install-box .copy-btn { width: 100%; text-align: center; padding: 8px; }
       .demo { padding: 0 12px; }
+      .curriculum { padding: 0 16px; }
+      .features { padding: 0 16px; margin: 60px auto; }
+      .badge { font-size: 11px; padding: 5px 14px; }
     }
-    @media (max-width: 480px) {
-      .install-box { flex-wrap: wrap; justify-content: center; }
-      .install-box .copy-btn { margin-top: 4px; }
+    @media (max-width: 380px) {
+      .install-box { font-size: 11px; padding: 10px 12px; gap: 8px; }
+      .tier-item { font-size: 12px; padding: 6px 10px; }
     }
   </style>
 </head>
@@ -270,7 +280,7 @@
     </div>
     <h1><span class="accent">AI</span>Tutor</h1>
     <p class="tagline sans">
-      Learn AI coding concepts interactively in your terminal — context windows, MCP, tools, subagents, and more. Like vimtutor, but for AI&#8209;assisted development.
+      Learn AI coding concepts interactively in your terminal — context windows, MCP, tools, subagents, and more. Like <span style="color:var(--text);font-family:'SF Mono','Fira Code','JetBrains Mono',monospace;background:rgba(122,162,247,0.1);padding:2px 7px;border-radius:4px;font-size:0.9em;">vimtutor</span>, but for AI&#8209;assisted development.
     </p>
     <div class="install-box" onclick="copyInstall()" title="Click to copy">
       <span class="prompt">$</span>
@@ -298,17 +308,17 @@
   <!-- Features -->
   <section class="features">
     <div class="feature">
-      <div class="feature-icon theory">📖</div>
+      <div class="feature-icon theory"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg></div>
       <h3>Theory</h3>
       <p class="sans">Scrollable content explaining each concept clearly with real-world context.</p>
     </div>
     <div class="feature">
-      <div class="feature-icon viz">⚡</div>
+      <div class="feature-icon viz"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></div>
       <h3>Interactive Viz</h3>
       <p class="sans">Manipulate ASCII visualizations that bring abstract concepts to life in your terminal.</p>
     </div>
     <div class="feature">
-      <div class="feature-icon quiz">✅</div>
+      <div class="feature-icon quiz"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg></div>
       <h3>Quizzes</h3>
       <p class="sans">Test your understanding with multiple choice, fill-in-the-blank, and ordering questions.</p>
     </div>
