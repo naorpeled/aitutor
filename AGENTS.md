@@ -64,6 +64,23 @@ make vet      # go vet ./...
 make install  # go install .
 ```
 
+## Releasing
+
+Releases are automated via GoReleaser and GitHub Actions (`.goreleaser.yaml`, `.github/workflows/release.yml`).
+
+To publish a new release:
+1. Tag the commit: `git tag vX.Y.Z`
+2. Push the tag: `git push origin vX.Y.Z`
+3. The GitHub Action builds cross-platform binaries (macOS/Linux, amd64/arm64), creates a GitHub Release, and updates the Homebrew formula in `naorpeled/homebrew-tap`
+
+Users install via Homebrew:
+```bash
+brew tap naorpeled/tap
+brew install aitutor
+```
+
+The `HOMEBREW_TAP_TOKEN` secret in the repo grants GoReleaser permission to push formula updates to the tap repo.
+
 ## Generating the Demo GIF
 
 ```bash
