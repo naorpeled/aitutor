@@ -7,6 +7,7 @@ import (
 	"github.com/charmbracelet/bubbles/key"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
+	"github.com/naorpeled/aitutor/internal/ui"
 )
 
 type toolStep struct {
@@ -69,10 +70,10 @@ func (m *ToolFlowModel) Update(msg tea.Msg) (Model, tea.Cmd) {
 }
 
 func (m *ToolFlowModel) View() string {
-	active := lipgloss.NewStyle().Foreground(lipgloss.Color("#4ade80")).Bold(true)
-	dim := lipgloss.NewStyle().Foreground(lipgloss.Color("#6b7280"))
-	highlight := lipgloss.NewStyle().Foreground(lipgloss.Color("#38bdf8"))
-	labelStyle := lipgloss.NewStyle().Foreground(lipgloss.Color("#facc15")).Bold(true)
+	active := lipgloss.NewStyle().Foreground(ui.ColorBeginner).Bold(true)
+	dim := lipgloss.NewStyle().Foreground(ui.ColorMuted)
+	highlight := lipgloss.NewStyle().Foreground(ui.ColorHighlight)
+	labelStyle := lipgloss.NewStyle().Foreground(ui.ColorIntermediate).Bold(true)
 
 	var lines []string
 	lines = append(lines, "")

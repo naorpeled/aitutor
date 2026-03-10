@@ -7,6 +7,7 @@ import (
 	"github.com/charmbracelet/bubbles/key"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
+	"github.com/naorpeled/aitutor/internal/ui"
 )
 
 type deferredTool struct {
@@ -22,7 +23,6 @@ type ToolSearchModel struct {
 	tools     []deferredTool
 	cursor    int
 	phase     int // 0=browse deferred list, 1=search, 2=result
-	searchQuery string
 	searchResults []int
 	contextUsed int
 }
@@ -107,12 +107,12 @@ func (m *ToolSearchModel) Update(msg tea.Msg) (Model, tea.Cmd) {
 }
 
 func (m *ToolSearchModel) View() string {
-	accent := lipgloss.NewStyle().Foreground(lipgloss.Color("#818cf8")).Bold(true)
-	loaded := lipgloss.NewStyle().Foreground(lipgloss.Color("#4ade80")).Bold(true)
-	deferred := lipgloss.NewStyle().Foreground(lipgloss.Color("#6b7280"))
-	highlight := lipgloss.NewStyle().Foreground(lipgloss.Color("#38bdf8")).Bold(true)
-	dim := lipgloss.NewStyle().Foreground(lipgloss.Color("#6b7280"))
-	yellow := lipgloss.NewStyle().Foreground(lipgloss.Color("#facc15"))
+	accent := lipgloss.NewStyle().Foreground(ui.ColorAccent).Bold(true)
+	loaded := lipgloss.NewStyle().Foreground(ui.ColorCorrect).Bold(true)
+	deferred := lipgloss.NewStyle().Foreground(ui.ColorMuted)
+	highlight := lipgloss.NewStyle().Foreground(ui.ColorHighlight).Bold(true)
+	dim := lipgloss.NewStyle().Foreground(ui.ColorMuted)
+	yellow := lipgloss.NewStyle().Foreground(ui.ColorIntermediate)
 
 	var lines []string
 	lines = append(lines, "")

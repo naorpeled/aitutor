@@ -7,6 +7,7 @@ import (
 	"github.com/charmbracelet/bubbles/key"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
+	"github.com/naorpeled/aitutor/internal/ui"
 )
 
 type skill struct {
@@ -58,11 +59,11 @@ func (m *SkillLoadModel) Update(msg tea.Msg) (Model, tea.Cmd) {
 }
 
 func (m *SkillLoadModel) View() string {
-	loaded := lipgloss.NewStyle().Foreground(lipgloss.Color("#4ade80")).Bold(true)
-	deferred := lipgloss.NewStyle().Foreground(lipgloss.Color("#6b7280"))
-	accent := lipgloss.NewStyle().Foreground(lipgloss.Color("#818cf8")).Bold(true)
-	highlight := lipgloss.NewStyle().Foreground(lipgloss.Color("#38bdf8"))
-	dim := lipgloss.NewStyle().Foreground(lipgloss.Color("#6b7280"))
+	loaded := lipgloss.NewStyle().Foreground(ui.ColorCorrect).Bold(true)
+	deferred := lipgloss.NewStyle().Foreground(ui.ColorMuted)
+	accent := lipgloss.NewStyle().Foreground(ui.ColorAccent).Bold(true)
+	highlight := lipgloss.NewStyle().Foreground(ui.ColorHighlight)
+	dim := lipgloss.NewStyle().Foreground(ui.ColorMuted)
 
 	var lines []string
 	lines = append(lines, "")

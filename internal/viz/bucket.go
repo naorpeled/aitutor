@@ -7,6 +7,7 @@ import (
 	"github.com/charmbracelet/bubbles/key"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
+	"github.com/naorpeled/aitutor/internal/ui"
 )
 
 type contextItem struct {
@@ -91,8 +92,8 @@ func NewBucketModel(w, h int) Model {
 		mcpServers: makeMCPServers(),
 	}
 	m.items = []contextItem{
-		{Name: "System Prompt", Tokens: 8000, Color: lipgloss.Color("#6b7280"), Char: '▒', Category: "system"},
-		{Name: "CLAUDE.md", Tokens: 2000, Color: lipgloss.Color("#4ade80"), Char: '░', Category: "system"},
+		{Name: "System Prompt", Tokens: 8000, Color: ui.ColorMuted, Char: '▒', Category: "system"},
+		{Name: "CLAUDE.md", Tokens: 2000, Color: ui.ColorBeginner, Char: '░', Category: "system"},
 	}
 	return m
 }
@@ -290,27 +291,7 @@ func (m *BucketModel) runCompression() {
 	if convItems > 2 {
 		// Keep only the last conversation message, summarize the rest
 		var newItems []contextItem
-		convSeen := 0
-		for i := len(m.items) - 1; i >= 0; i-- {
-			if m.items[i].Category == "conversation" {
-				convSeen++
-			}
-		}
 		removedTokens := 0
-		keptConv := 0
-		for i := len(m.items) - 1; i >= 0; i-- {
-			if m.items[i].Category == "conversation" {
-				keptConv++
-			}
-		}
-		// Rebuild: keep system + last 1 conversation + last 3 tools + add summary
-		newItems = nil
-		convFromEnd := 0
-		for i := len(m.items) - 1; i >= 0; i-- {
-			if m.items[i].Category == "conversation" {
-				convFromEnd++
-			}
-		}
 
 		convCount := 0
 		var keptItems []contextItem
@@ -393,8 +374,8 @@ func (m *BucketModel) Update(msg tea.Msg) (Model, tea.Cmd) {
 			case key.Matches(msg, key.NewBinding(key.WithKeys("r"))):
 				m.compressing = false
 				m.items = []contextItem{
-					{Name: "System Prompt", Tokens: 8000, Color: lipgloss.Color("#6b7280"), Char: '▒', Category: "system"},
-					{Name: "CLAUDE.md", Tokens: 2000, Color: lipgloss.Color("#4ade80"), Char: '░', Category: "system"},
+					{Name: "System Prompt", Tokens: 8000, Color: ui.ColorMuted, Char: '▒', Category: "system"},
+					{Name: "CLAUDE.md", Tokens: 2000, Color: ui.ColorBeginner, Char: '░', Category: "system"},
 				}
 				for i := range m.mcpServers {
 					m.mcpServers[i].Enabled = false
@@ -466,14 +447,14 @@ func (m *BucketModel) Update(msg tea.Msg) (Model, tea.Cmd) {
 		case key.Matches(msg, key.NewBinding(key.WithKeys("enter", " "))):
 			if m.tab == 0 {
 				opt := m.options[m.cursor]
-				color := lipgloss.Color("#38bdf8")
+				color := ui.ColorHighlight
 				ch := '█'
 				switch opt.Category {
 				case "conversation":
-					color = lipgloss.Color("#818cf8")
+					color = ui.ColorAccent
 					ch = '▓'
 				case "system":
-					color = lipgloss.Color("#4ade80")
+					color = ui.ColorBeginner
 					ch = '░'
 				}
 				m.items = append(m.items, contextItem{
@@ -515,8 +496,8 @@ func (m *BucketModel) Update(msg tea.Msg) (Model, tea.Cmd) {
 			}
 		case key.Matches(msg, key.NewBinding(key.WithKeys("r"))):
 			m.items = []contextItem{
-				{Name: "System Prompt", Tokens: 8000, Color: lipgloss.Color("#6b7280"), Char: '▒', Category: "system"},
-				{Name: "CLAUDE.md", Tokens: 2000, Color: lipgloss.Color("#4ade80"), Char: '░', Category: "system"},
+				{Name: "System Prompt", Tokens: 8000, Color: ui.ColorMuted, Char: '▒', Category: "system"},
+				{Name: "CLAUDE.md", Tokens: 2000, Color: ui.ColorBeginner, Char: '░', Category: "system"},
 			}
 			for i := range m.mcpServers {
 				m.mcpServers[i].Enabled = false
@@ -540,14 +521,14 @@ func (m *BucketModel) View() string {
 }
 
 func (m *BucketModel) viewCompression() string {
-	accent := lipgloss.NewStyle().Foreground(lipgloss.Color("#818cf8")).Bold(true)
-	dim := lipgloss.NewStyle().Foreground(lipgloss.Color("#6b7280"))
-	highlight := lipgloss.NewStyle().Foreground(lipgloss.Color("#38bdf8")).Bold(true)
-	warn := lipgloss.NewStyle().Foreground(lipgloss.Color("#f87171")).Bold(true)
-	green := lipgloss.NewStyle().Foreground(lipgloss.Color("#4ade80")).Bold(true)
-	yellow := lipgloss.NewStyle().Foreground(lipgloss.Color("#facc15"))
-	strikethrough := lipgloss.NewStyle().Foreground(lipgloss.Color("#f87171")).Strikethrough(true)
-	arrow := lipgloss.NewStyle().Foreground(lipgloss.Color("#4ade80")).Bold(true)
+	accent := lipgloss.NewStyle().Foreground(ui.ColorAccent).Bold(true)
+	dim := lipgloss.NewStyle().Foreground(ui.ColorMuted)
+	highlight := lipgloss.NewStyle().Foreground(ui.ColorHighlight).Bold(true)
+	warn := lipgloss.NewStyle().Foreground(ui.ColorAdvanced).Bold(true)
+	green := lipgloss.NewStyle().Foreground(ui.ColorBeginner).Bold(true)
+	yellow := lipgloss.NewStyle().Foreground(ui.ColorIntermediate)
+	strikethrough := lipgloss.NewStyle().Foreground(ui.ColorAdvanced).Strikethrough(true)
+	arrow := lipgloss.NewStyle().Foreground(ui.ColorBeginner).Bold(true)
 
 	var lines []string
 	lines = append(lines, "")
@@ -633,18 +614,18 @@ func (m *BucketModel) viewCompression() string {
 }
 
 func (m *BucketModel) viewNormal() string {
-	accent := lipgloss.NewStyle().Foreground(lipgloss.Color("#818cf8")).Bold(true)
-	dim := lipgloss.NewStyle().Foreground(lipgloss.Color("#6b7280"))
-	highlight := lipgloss.NewStyle().Foreground(lipgloss.Color("#38bdf8")).Bold(true)
-	warn := lipgloss.NewStyle().Foreground(lipgloss.Color("#f87171")).Bold(true)
-	green := lipgloss.NewStyle().Foreground(lipgloss.Color("#4ade80"))
+	accent := lipgloss.NewStyle().Foreground(ui.ColorAccent).Bold(true)
+	dim := lipgloss.NewStyle().Foreground(ui.ColorMuted)
+	highlight := lipgloss.NewStyle().Foreground(ui.ColorHighlight).Bold(true)
+	warn := lipgloss.NewStyle().Foreground(ui.ColorAdvanced).Bold(true)
+	green := lipgloss.NewStyle().Foreground(ui.ColorBeginner)
 	mcpClr := lipgloss.NewStyle().Foreground(lipgloss.Color("#f97316")).Bold(true)
-	tabActive := lipgloss.NewStyle().Foreground(lipgloss.Color("#38bdf8")).Bold(true).Underline(true)
+	tabActive := lipgloss.NewStyle().Foreground(ui.ColorHighlight).Bold(true).Underline(true)
 	tabInactive := dim
 
-	sysStyle := lipgloss.NewStyle().Foreground(lipgloss.Color("#6b7280"))
-	toolStyle := lipgloss.NewStyle().Foreground(lipgloss.Color("#38bdf8"))
-	convStyle := lipgloss.NewStyle().Foreground(lipgloss.Color("#818cf8"))
+	sysStyle := lipgloss.NewStyle().Foreground(ui.ColorMuted)
+	toolStyle := lipgloss.NewStyle().Foreground(ui.ColorHighlight)
+	convStyle := lipgloss.NewStyle().Foreground(ui.ColorAccent)
 
 	used := m.totalUsed()
 	sysTok, toolTok, convTok, mcpTok := m.categoryTotals()
@@ -708,7 +689,7 @@ func (m *BucketModel) viewNormal() string {
 	pct := float64(used) / float64(m.capacity) * 100
 	counterStyle := green
 	if pct > 75 {
-		counterStyle = lipgloss.NewStyle().Foreground(lipgloss.Color("#facc15"))
+		counterStyle = lipgloss.NewStyle().Foreground(ui.ColorIntermediate)
 	}
 	if pct > 100 {
 		counterStyle = warn

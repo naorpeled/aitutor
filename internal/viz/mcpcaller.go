@@ -7,6 +7,7 @@ import (
 	"github.com/charmbracelet/bubbles/key"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
+	"github.com/naorpeled/aitutor/internal/ui"
 )
 
 type mcpTool struct {
@@ -116,13 +117,13 @@ func (m *MCPCallerModel) Update(msg tea.Msg) (Model, tea.Cmd) {
 }
 
 func (m *MCPCallerModel) View() string {
-	accent := lipgloss.NewStyle().Foreground(lipgloss.Color("#818cf8")).Bold(true)
-	active := lipgloss.NewStyle().Foreground(lipgloss.Color("#4ade80")).Bold(true)
-	highlight := lipgloss.NewStyle().Foreground(lipgloss.Color("#38bdf8")).Bold(true)
-	dim := lipgloss.NewStyle().Foreground(lipgloss.Color("#6b7280"))
+	accent := lipgloss.NewStyle().Foreground(ui.ColorAccent).Bold(true)
+	active := lipgloss.NewStyle().Foreground(ui.ColorCorrect).Bold(true)
+	highlight := lipgloss.NewStyle().Foreground(ui.ColorHighlight).Bold(true)
+	dim := lipgloss.NewStyle().Foreground(ui.ColorMuted)
 	text := lipgloss.NewStyle().Foreground(lipgloss.Color("#d1d5db"))
-	yellow := lipgloss.NewStyle().Foreground(lipgloss.Color("#facc15"))
-	output := lipgloss.NewStyle().Foreground(lipgloss.Color("#4ade80"))
+	yellow := lipgloss.NewStyle().Foreground(ui.ColorIntermediate)
+	output := lipgloss.NewStyle().Foreground(ui.ColorBeginner)
 
 	var lines []string
 	lines = append(lines, "")
