@@ -1,6 +1,6 @@
 {
   "name": "@aitutor/cli",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Interactive terminal-based tutorial for AI coding concepts — like vimtutor, but for AI-assisted development",
   "bin": {
     "aitutor": "run.js"
