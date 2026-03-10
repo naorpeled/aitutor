@@ -91,24 +91,43 @@
       text-decoration-color: var(--accent);
     }
 
-    /* ── Install tabs ── */
-    .install-tabs {
-      display: inline-flex;
-      gap: 4px;
+    /* ── Install terminal ── */
+    .install-terminal {
       background: var(--surface);
       border: 1px solid var(--border);
-      border-radius: 8px;
-      padding: 3px;
-      margin-bottom: 12px;
+      border-radius: 12px;
+      overflow: hidden;
+      margin-bottom: 16px;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+      max-width: 520px;
+      width: 100%;
+    }
+    .install-titlebar {
+      display: flex;
+      align-items: center;
+      padding: 10px 16px;
+      background: #14151f;
+      border-bottom: 1px solid var(--border);
+      gap: 7px;
+    }
+    .install-titlebar .dots {
+      display: flex;
+      gap: 7px;
+      margin-right: 12px;
+    }
+    .install-tabs {
+      display: flex;
+      gap: 2px;
+      margin-left: auto;
     }
     .install-tab {
       background: none;
       border: none;
       color: var(--text-muted);
       font-family: inherit;
-      font-size: 13px;
-      padding: 6px 16px;
-      border-radius: 6px;
+      font-size: 12px;
+      padding: 4px 12px;
+      border-radius: 4px;
       cursor: pointer;
       transition: all 0.2s;
     }
@@ -118,25 +137,19 @@
       color: var(--accent);
     }
 
-    .install-box {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 10px;
-      padding: 14px 20px;
-      display: inline-flex;
+    .install-body {
+      padding: 16px 20px;
+      display: flex;
       align-items: center;
       gap: 14px;
-      font-size: clamp(12px, 2vw, 15px);
-      margin-bottom: 16px;
-      transition: border-color 0.2s;
+      font-size: clamp(13px, 2vw, 15px);
       cursor: pointer;
-      position: relative;
-      max-width: 100%;
+      transition: background 0.2s;
     }
-    .install-box:hover { border-color: var(--accent); }
-    .install-box .prompt { color: var(--green); user-select: none; }
-    .install-box code { color: var(--text); word-break: break-all; }
-    .install-box .copy-btn {
+    .install-body:hover { background: rgba(122,162,247,0.04); }
+    .install-body .prompt { color: var(--green); user-select: none; }
+    .install-body code { color: var(--text); word-break: break-all; }
+    .install-body .copy-btn {
       background: none;
       border: 1px solid var(--border);
       color: var(--text-dim);
@@ -146,8 +159,10 @@
       font-size: 12px;
       font-family: inherit;
       transition: all 0.2s;
+      margin-left: auto;
+      flex-shrink: 0;
     }
-    .install-box .copy-btn:hover { border-color: var(--accent); color: var(--accent); }
+    .install-body .copy-btn:hover { border-color: var(--accent); color: var(--accent); }
 
     .install-sub {
       font-size: 13px;
@@ -279,20 +294,16 @@
     @media (max-width: 700px) {
       .features { grid-template-columns: 1fr; gap: 12px; }
       .hero { min-height: auto; padding: 60px 16px 40px; }
-      .install-box {
-        padding: 12px 14px;
-        gap: 10px;
-        flex-wrap: wrap;
-        justify-content: center;
-      }
-      .install-box .copy-btn { width: 100%; text-align: center; padding: 8px; }
+      .install-terminal { max-width: 100%; }
+      .install-body { padding: 14px; gap: 10px; flex-wrap: wrap; justify-content: center; }
+      .install-body .copy-btn { width: 100%; text-align: center; padding: 8px; }
       .demo { padding: 0 12px; }
       .curriculum { padding: 0 16px; }
       .features { padding: 0 16px; margin: 60px auto; }
       .badge { font-size: 11px; padding: 5px 14px; }
     }
     @media (max-width: 380px) {
-      .install-box { font-size: 11px; padding: 10px 12px; gap: 8px; }
+      .install-body { font-size: 11px; padding: 10px 12px; gap: 8px; }
       .install-tab { font-size: 12px; padding: 5px 12px; }
       .tier-item { font-size: 12px; padding: 6px 10px; }
     }
@@ -310,16 +321,24 @@
     <p class="tagline sans">
       Learn AI coding concepts interactively in your terminal — context windows, MCP, tools, subagents, and more. Like <span style="color:var(--text);font-family:'SF Mono','Fira Code','JetBrains Mono',monospace;background:rgba(122,162,247,0.1);padding:2px 7px;border-radius:4px;font-size:0.9em;">vimtutor</span>, but for AI&#8209;assisted development.
     </p>
-    <div class="install-tabs">
-      <button class="install-tab active" onclick="switchTab('npm')">npm</button>
-      <button class="install-tab" onclick="switchTab('brew')">Homebrew</button>
-      <button class="install-tab" onclick="switchTab('go')">Go</button>
-    </div>
-
-    <div class="install-box" onclick="copyInstall()" title="Click to copy">
-      <span class="prompt">$</span>
-      <code id="installCmd">npx @aitutor/cli</code>
-      <button class="copy-btn" id="copyBtn">Copy</button>
+    <div class="install-terminal">
+      <div class="install-titlebar">
+        <div class="dots">
+          <div class="dot dot-r"></div>
+          <div class="dot dot-y"></div>
+          <div class="dot dot-g"></div>
+        </div>
+        <div class="install-tabs">
+          <button class="install-tab active" onclick="switchTab('npm')">npm</button>
+          <button class="install-tab" onclick="switchTab('brew')">Homebrew</button>
+          <button class="install-tab" onclick="switchTab('go')">Go</button>
+        </div>
+      </div>
+      <div class="install-body" onclick="copyInstall()" title="Click to copy">
+        <span class="prompt">$</span>
+        <code id="installCmd">npx @aitutor/cli</code>
+        <button class="copy-btn" id="copyBtn">Copy</button>
+      </div>
     </div>
 
     <p id="installNote" style="margin-bottom: 10px; font-size: 13px; color: var(--text-dim);">
