@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AITutor — Interactive AI Coding Tutorial</title>
+  <meta name="description" content="Learn AI coding concepts interactively in your terminal. Context windows, MCP, tools, subagents, and more — like vimtutor, but for AI-assisted development.">
+  <meta property="og:title" content="AITutor — Interactive AI Coding Tutorial">
+  <meta property="og:description" content="Learn AI coding concepts interactively in your terminal. 15 hands-on lessons with visualizations and quizzes.">
+  <meta property="og:type" content="website">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🤖</text></svg>">
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+      --bg: #0f0f17;
+      --surface: #1a1b2e;
+      --border: #2a2b3d;
+      --border-hover: #3b3d52;
+      --text: #c0caf5;
+      --text-dim: #8b92a8;
+      --text-muted: #565f89;
+      --accent: #7aa2f7;
+      --green: #9ece6a;
+      --yellow: #e0af68;
+      --red: #f7768e;
+      --purple: #bb9af7;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'SF Mono', 'Fira Code', 'JetBrains Mono', 'Cascadia Code', 'Consolas', monospace;
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .sans {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Inter', Roboto, Helvetica, Arial, sans-serif;
+    }
+
+    /* ── Hero ── */
+    .hero {
+      min-height: 92vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 60px 20px 40px;
+      background: radial-gradient(ellipse at 50% 0%, rgba(122,162,247,0.10) 0%, transparent 60%);
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(122,162,247,0.08);
+      border: 1px solid rgba(122,162,247,0.2);
+      border-radius: 20px;
+      padding: 6px 18px;
+      font-size: 13px;
+      color: var(--accent);
+      margin-bottom: 32px;
+    }
+
+    .hero h1 {
+      font-size: clamp(2.8rem, 7vw, 5rem);
+      font-weight: 800;
+      letter-spacing: -2px;
+      line-height: 1.05;
+      margin-bottom: 20px;
+    }
+    .hero h1 .accent { color: var(--accent); }
+
+    .tagline {
+      font-size: clamp(1rem, 2.5vw, 1.2rem);
+      color: var(--text-dim);
+      max-width: 580px;
+      line-height: 1.7;
+      margin-bottom: 40px;
+    }
+    .tagline a {
+      color: var(--text);
+      text-decoration: underline;
+      text-decoration-color: var(--text-muted);
+      text-underline-offset: 3px;
+      transition: text-decoration-color 0.2s;
+    }
+    .tagline a:hover {
+      text-decoration-color: var(--accent);
+    }
+
+    .install-box {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 14px 20px;
+      display: inline-flex;
+      align-items: center;
+      gap: 14px;
+      font-size: clamp(13px, 2vw, 15px);
+      margin-bottom: 16px;
+      transition: border-color 0.2s;
+      cursor: pointer;
+      position: relative;
+    }
+    .install-box:hover { border-color: var(--accent); }
+    .install-box .prompt { color: var(--green); user-select: none; }
+    .install-box code { color: var(--text); white-space: nowrap; }
+    .install-box .copy-btn {
+      background: none;
+      border: 1px solid var(--border);
+      color: var(--text-dim);
+      padding: 4px 12px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 12px;
+      font-family: inherit;
+      transition: all 0.2s;
+    }
+    .install-box .copy-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+    .install-sub {
+      font-size: 13px;
+      color: var(--text-muted);
+    }
+    .install-sub a {
+      color: var(--accent);
+      text-decoration: none;
+      transition: opacity 0.2s;
+    }
+    .install-sub a:hover { opacity: 0.8; }
+
+    /* ── Demo ── */
+    .demo {
+      max-width: 820px;
+      margin: -20px auto 0;
+      padding: 0 20px;
+    }
+    .demo-window {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 24px 80px rgba(0,0,0,0.45);
+    }
+    .demo-titlebar {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      padding: 11px 16px;
+      background: #14151f;
+      border-bottom: 1px solid var(--border);
+    }
+    .dot { width: 11px; height: 11px; border-radius: 50%; }
+    .dot-r { background: var(--red); }
+    .dot-y { background: var(--yellow); }
+    .dot-g { background: var(--green); }
+    .demo-window img {
+      display: block;
+      width: 100%;
+      height: auto;
+    }
+
+    /* ── Features ── */
+    .features {
+      max-width: 920px;
+      margin: 80px auto;
+      padding: 0 20px;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+    }
+
+    .feature {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 28px 24px;
+      transition: border-color 0.2s, transform 0.2s;
+    }
+    .feature:hover { border-color: var(--border-hover); transform: translateY(-2px); }
+    .feature-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      margin-bottom: 16px;
+    }
+    .feature-icon.theory { background: rgba(122,162,247,0.12); color: var(--accent); }
+    .feature-icon.viz { background: rgba(158,206,106,0.12); color: var(--green); }
+    .feature-icon.quiz { background: rgba(187,154,247,0.12); color: var(--purple); }
+    .feature h3 { font-size: 15px; margin-bottom: 8px; font-weight: 600; }
+    .feature p { font-size: 13px; color: var(--text-dim); line-height: 1.65; }
+
+    /* ── Curriculum ── */
+    .curriculum {
+      max-width: 720px;
+      margin: 0 auto 80px;
+      padding: 0 20px;
+    }
+    .curriculum h2 {
+      text-align: center;
+      font-size: clamp(1.3rem, 3vw, 1.6rem);
+      margin-bottom: 36px;
+    }
+    .tier { margin-bottom: 28px; }
+    .tier-label {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      margin-bottom: 10px;
+      padding-left: 2px;
+      font-weight: 700;
+    }
+    .tier-label.beginner { color: var(--green); }
+    .tier-label.intermediate { color: var(--yellow); }
+    .tier-label.advanced { color: var(--red); }
+    .tier-items { display: flex; flex-wrap: wrap; gap: 8px; }
+    .tier-item {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 8px 14px;
+      font-size: 13px;
+      color: var(--text-dim);
+      transition: border-color 0.2s, color 0.2s;
+    }
+    .tier-item:hover { border-color: var(--border-hover); color: var(--text); }
+
+    /* ── Footer ── */
+    .footer {
+      text-align: center;
+      padding: 40px 20px;
+      border-top: 1px solid var(--border);
+      font-size: 13px;
+      color: var(--text-muted);
+    }
+    .footer a {
+      color: var(--accent);
+      text-decoration: none;
+      transition: opacity 0.2s;
+    }
+    .footer a:hover { opacity: 0.8; }
+
+    /* ── Responsive ── */
+    @media (max-width: 700px) {
+      .features { grid-template-columns: 1fr; gap: 12px; }
+      .hero { min-height: 80vh; padding: 40px 16px 32px; }
+      .install-box { padding: 12px 14px; gap: 10px; }
+      .demo { padding: 0 12px; }
+    }
+    @media (max-width: 480px) {
+      .install-box { flex-wrap: wrap; justify-content: center; }
+      .install-box .copy-btn { margin-top: 4px; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Hero -->
+  <section class="hero">
+    <div class="badge">
+      <span style="color:var(--green)">●</span>
+      Open Source&ensp;·&ensp;Built with Go&ensp;·&ensp;15 Lessons
+    </div>
+    <h1><span class="accent">AI</span>Tutor</h1>
+    <p class="tagline sans">
+      Learn AI coding concepts interactively in your terminal — context windows, MCP, tools, subagents, and more. Like <a href="https://github.com/vim/vim/blob/master/runtime/tutor/tutor" target="_blank" rel="noopener">vimtutor</a>, but for AI&#8209;assisted development.
+    </p>
+    <div class="install-box" onclick="copyInstall()" title="Click to copy">
+      <span class="prompt">$</span>
+      <code>go install github.com/naorpeled/aitutor@latest</code>
+      <button class="copy-btn" id="copyBtn">Copy</button>
+    </div>
+    <p class="install-sub">
+      Requires Go 1.23+&ensp;·&ensp;
+      <a href="https://github.com/naorpeled/aitutor" target="_blank" rel="noopener">View on GitHub →</a>
+    </p>
+  </section>
+
+  <!-- Demo -->
+  <section class="demo">
+    <div class="demo-window">
+      <div class="demo-titlebar">
+        <div class="dot dot-r"></div>
+        <div class="dot dot-y"></div>
+        <div class="dot dot-g"></div>
+      </div>
+      <img src="demo.gif" alt="AITutor demo — interactive terminal tutorial showing lessons, visualizations, and quizzes" loading="lazy">
+    </div>
+  </section>
+
+  <!-- Features -->
+  <section class="features">
+    <div class="feature">
+      <div class="feature-icon theory">📖</div>
+      <h3>Theory</h3>
+      <p class="sans">Scrollable content explaining each concept clearly with real-world context.</p>
+    </div>
+    <div class="feature">
+      <div class="feature-icon viz">⚡</div>
+      <h3>Interactive Viz</h3>
+      <p class="sans">Manipulate ASCII visualizations that bring abstract concepts to life in your terminal.</p>
+    </div>
+    <div class="feature">
+      <div class="feature-icon quiz">✅</div>
+      <h3>Quizzes</h3>
+      <p class="sans">Test your understanding with multiple choice, fill-in-the-blank, and ordering questions.</p>
+    </div>
+  </section>
+
+  <!-- Curriculum -->
+  <section class="curriculum">
+    <h2>15 Lessons, 3 Tiers</h2>
+
+    <div class="tier">
+      <div class="tier-label beginner">Beginner</div>
+      <div class="tier-items">
+        <div class="tier-item">AI Coding Assistants</div>
+        <div class="tier-item">Context Window</div>
+        <div class="tier-item">Tools</div>
+        <div class="tier-item">Prompt Engineering</div>
+      </div>
+    </div>
+
+    <div class="tier">
+      <div class="tier-label intermediate">Intermediate</div>
+      <div class="tier-items">
+        <div class="tier-item">AGENTS.md / CLAUDE.md</div>
+        <div class="tier-item">Execution Modes</div>
+        <div class="tier-item">Hooks</div>
+        <div class="tier-item">Memory</div>
+        <div class="tier-item">Agentic Loop</div>
+      </div>
+    </div>
+
+    <div class="tier">
+      <div class="tier-label advanced">Advanced</div>
+      <div class="tier-items">
+        <div class="tier-item">MCP Protocol</div>
+        <div class="tier-item">Skills</div>
+        <div class="tier-item">Subagents</div>
+        <div class="tier-item">Git Worktrees</div>
+        <div class="tier-item">Tool Search</div>
+        <div class="tier-item">Batch Tool Calls</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="footer">
+    MIT License&ensp;·&ensp;
+    <a href="https://github.com/naorpeled/aitutor" target="_blank" rel="noopener">GitHub</a>&ensp;·&ensp;
+    Built with the <a href="https://charm.sh" target="_blank" rel="noopener">Charm</a> ecosystem
+  </footer>
+
+  <script>
+    function copyInstall() {
+      navigator.clipboard.writeText('go install github.com/naorpeled/aitutor@latest').then(function() {
+        var btn = document.getElementById('copyBtn');
+        btn.textContent = 'Copied!';
+        setTimeout(function() { btn.textContent = 'Copy'; }, 2000);
+      });
+    }
+  </script>
+</body>
+</html>
