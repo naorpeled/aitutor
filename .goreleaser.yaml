@@ -1,0 +1,23 @@
+version: 2
+
+builds:
+  - binary: aitutor
+    goos:
+      - darwin
+      - linux
+    goarch:
+      - amd64
+      - arm64
+    ldflags:
+      - -s -w
+
+brews:
+  - repository:
+      owner: naorpeled
+      name: homebrew-tap
+      token: "{{ .Env.HOMEBREW_TAP_TOKEN }}"
+    homepage: "https://github.com/naorpeled/aitutor"
+    description: "Interactive terminal tutorial for AI coding concepts"
+    license: "MIT"
+    install: |
+      bin.install "aitutor"
