@@ -12,6 +12,7 @@ Interactive terminal-based tutorial for AI coding concepts. Learn context window
 
 ```bash
 go install github.com/naorpeled/aitutor@latest
+aitutor
 ```
 
 Or build from source:

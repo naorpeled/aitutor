@@ -165,16 +165,12 @@ func (m *AgenticLoopModel) View() string {
 		phaseStyle(2).Render(phaseNames[2]),
 		phaseStyle(3).Render(phaseNames[3]))
 
-	// Measure visual width and draw matching borders
-	plainTop := fmt.Sprintf("  %s ──> %s ──> %s ──> %s",
-		phaseNames[0], phaseNames[1], phaseNames[2], phaseNames[3])
-	borderLen := len(plainTop) - 2 // subtract leading spaces
-	if borderLen < 20 {
-		borderLen = 20
-	}
+	// Measure visual width using lipgloss (len() counts bytes, not display width)
+	plainTop := "Read ──> Think ──> Act ──> Observe"
+	borderLen := lipgloss.Width(plainTop) + 2 // +2 for padding inside box
 
 	lines = append(lines, dim.Render("  ┌"+strings.Repeat("─", borderLen)+"┐"))
-	lines = append(lines, topLine+dim.Render(" ─┤"))
+	lines = append(lines, dim.Render("  │ ")+topLine+dim.Render(" │"))
 	lines = append(lines, dim.Render("  └"+strings.Repeat("─", borderLen)+"┘"))
 	lines = append(lines, "")
 
