@@ -21,7 +21,7 @@ func init() {
 			{Kind: types.Heading, Content: "How Hooks Work"},
 			{Kind: types.Code, Content: "  User sends message\n       │\n       ▼\n  ┌─PromptSubmit hook──┐\n  └────────────────────┘\n       │\n       ▼\n  AI decides to use tool\n       │\n       ▼\n  ┌─PreToolUse hook────┐  ← can BLOCK the tool\n  └────────────────────┘\n       │\n       ▼\n  Tool executes\n       │\n       ▼\n  ┌─PostToolUse hook───┐\n  └────────────────────┘"},
 			{Kind: types.Heading, Content: "Example: Auto-format on Edit"},
-			{Kind: types.Code, Content: "  // .claude/hooks.json\n  {\n    \"hooks\": {\n      \"PostToolUse\": [{\n        \"matcher\": \"Edit\",\n        \"command\": \"./scripts/format-on-save.sh\"\n      }]\n    }\n  }"},
+			{Kind: types.Code, Content: "  // Example: Claude Code hooks (.claude/hooks.json)\n  // Other tools offer similar lifecycle events with different syntax\n  {\n    \"hooks\": {\n      \"PostToolUse\": [{\n        \"matcher\": \"Edit\",\n        \"command\": \"./scripts/format-on-save.sh\"\n      }]\n    }\n  }"},
 			{Kind: types.Callout, Content: "Hooks are powerful for enforcing team standards — like running linters after every edit or blocking writes to protected files."},
 		},
 		Questions: []types.QuizQuestion{

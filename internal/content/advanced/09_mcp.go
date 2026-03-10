@@ -21,8 +21,9 @@ func init() {
 			{Kind: types.Heading, Content: "Key Concepts"},
 			{Kind: types.Bullet, Content: "Tools — functions the AI can call (e.g., query database, send Slack message)\nResources — data the AI can read (e.g., documentation, API schemas)\nPrompts — reusable prompt templates for common tasks\nSampling — lets servers request the client to perform LLM completions\nTransports — communication channels (stdio for local, Streamable HTTP for remote)"},
 			{Kind: types.Heading, Content: "Configuration"},
-			{Kind: types.Code, Content: "  // .claude/mcp.json\n  {\n    \"mcpServers\": {\n      \"github\": {\n        \"command\": \"gh-mcp-server\",\n        \"args\": [\"--repo\", \"owner/repo\"]\n      },\n      \"database\": {\n        \"command\": \"db-mcp-server\",\n        \"args\": [\"--connection\", \"postgres://...\"]\n      }\n    }\n  }"},
+			{Kind: types.Code, Content: "  // MCP config (path varies: .claude/mcp.json, .cursor/mcp.json, etc.)\n  {\n    \"mcpServers\": {\n      \"github\": {\n        \"command\": \"gh-mcp-server\",\n        \"args\": [\"--repo\", \"owner/repo\"]\n      },\n      \"database\": {\n        \"command\": \"db-mcp-server\",\n        \"args\": [\"--connection\", \"postgres://...\"]\n      }\n    }\n  }"},
 			{Kind: types.Callout, Content: "MCP turns AI assistants from closed systems into extensible platforms. Any developer can build an MCP server to give the AI new capabilities."},
+			{Kind: types.Callout, Content: "Learn more: MCP Specification — https://spec.modelcontextprotocol.io/ | MCP Introduction — https://modelcontextprotocol.io/introduction"},
 		},
 		Questions: []types.QuizQuestion{
 			{

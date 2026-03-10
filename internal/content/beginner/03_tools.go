@@ -26,6 +26,7 @@ func init() {
 			{Kind: types.Heading, Content: "Permission Model"},
 			{Kind: types.Paragraph, Content: "Tools operate under a permission system. Some tools run automatically (like reading files), while others require explicit approval (like running arbitrary shell commands or writing files). This keeps you in control."},
 			{Kind: types.Callout, Content: "Think of tools as the AI's hands and eyes. Without them, it can only think. With them, it can explore, modify, and build."},
+			{Kind: types.Callout, Content: "Learn more: Language Server Protocol — https://microsoft.github.io/language-server-protocol/ | Glob patterns — https://en.wikipedia.org/wiki/Glob_(programming)"},
 		},
 		Questions: []types.QuizQuestion{
 			{

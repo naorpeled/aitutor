@@ -29,6 +29,7 @@ func init() {
 			{Kind: types.Paragraph, Content: "Different agentic frameworks name the steps differently, but the pattern is the same:"},
 			{Kind: types.Code, Content: "  Pattern          Steps\n  ──────           ─────\n  OODA             Observe → Orient → Decide → Act\n  ReAct            Reason → Act → Observe\n  Plan-and-Execute Plan → Execute → Observe → Replan\n  General agent    Perceive → Decide → Execute → Evaluate"},
 			{Kind: types.Callout, Content: "The names vary, but every agentic system follows the same principle: gather information, reason about it, take action, check the result, and repeat. The loop is what turns a language model into an agent."},
+			{Kind: types.Callout, Content: "Learn more: ReAct pattern — https://arxiv.org/abs/2210.03629 | OODA loop — https://en.wikipedia.org/wiki/OODA_loop"},
 			{Kind: types.Heading, Content: "What Controls the Loop?"},
 			{Kind: types.Bullet, Content: "Stop condition — the agent decides the task is complete (tests pass, user confirms)\nMax iterations — safety limit to prevent infinite loops\nError handling — the agent can break out if it's stuck\nUser intervention — the human can redirect or stop the agent\nToken budget — the context window limits how many iterations fit"},
 			{Kind: types.Heading, Content: "Single-Shot vs Agentic"},

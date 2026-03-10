@@ -12,9 +12,12 @@ import (
 func RenderTheory(blocks []types.TheoryBlock, width int) string {
 	var parts []string
 
-	for _, b := range blocks {
+	for i, b := range blocks {
 		switch b.Kind {
 		case types.Heading:
+			if i > 0 {
+				parts = append(parts, "")
+			}
 			parts = append(parts, ui.HeadingStyle.Width(width).Render(b.Content))
 		case types.Paragraph:
 			parts = append(parts, ui.ParagraphStyle.Width(width).Render(b.Content))

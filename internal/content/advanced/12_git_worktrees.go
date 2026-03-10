@@ -26,6 +26,7 @@ func init() {
 			{Kind: types.Heading, Content: "Best Practices"},
 			{Kind: types.Bullet, Content: "Use a sibling directory for worktrees (not inside the repo)\nName worktrees after their branch for clarity\nClean up worktrees when branches are merged\nAvoid having two worktrees on the same branch"},
 			{Kind: types.Callout, Content: "Worktrees are the key enabler for safe parallel AI development — they give each agent its own sandbox to work in."},
+			{Kind: types.Callout, Content: "Learn more: Git Worktrees — https://git-scm.com/docs/git-worktree"},
 		},
 		Questions: []types.QuizQuestion{
 			{

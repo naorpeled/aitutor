@@ -24,6 +24,7 @@ func init() {
 			{Kind: types.Heading, Content: "Iterative Refinement"},
 			{Kind: types.Paragraph, Content: "You don't need the perfect prompt on the first try. Start with a clear request, review the result, and refine. The AI remembers the conversation context, so you can course-correct naturally."},
 			{Kind: types.Callout, Content: "The best prompts give the AI the same information you'd give a skilled colleague: what's the problem, what have you tried, and what does success look like?"},
+			{Kind: types.Callout, Content: "Learn more: Prompt Engineering Guide — https://www.promptingguide.ai"},
 		},
 		Questions: []types.QuizQuestion{
 			{
