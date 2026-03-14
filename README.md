@@ -19,7 +19,7 @@ npx @aitutor/cli@latest
 Or install globally:
 
 ```bash
-npm install -g aitutor
+npm install -g @aitutor/cli@latest
 aitutor
 ```
 
