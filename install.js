@@ -4,12 +4,12 @@ const { execFileSync } = require("child_process");
 const { createWriteStream, chmodSync, unlinkSync, mkdtempSync, renameSync, rmSync } = require("fs");
 const os = require("os");
 const https = require("https");
+const http = require("http");
 const path = require("path");
 const { pipeline } = require("stream/promises");
 
 const VERSION = require("./package.json").version;
 const REPO = "naorpeled/aitutor";
-const MAX_REDIRECTS = 10;
 
 const PLATFORM_MAP = {
   darwin: "darwin",
@@ -42,14 +42,12 @@ function getBinaryName() {
 }
 
 function follow(url, depth = 0) {
-  if (depth > MAX_REDIRECTS) {
-    return Promise.reject(new Error(`Too many redirects (max ${MAX_REDIRECTS})`));
+  if (depth > 10) {
+    return Promise.reject(new Error("Too many redirects"));
   }
-  if (!url.startsWith("https://")) {
-    return Promise.reject(new Error(`Refusing non-HTTPS URL: ${url}`));
-  }
+  const mod = url.startsWith("https") ? https : http;
   return new Promise((resolve, reject) => {
-    https
+    mod
       .get(url, { headers: { "User-Agent": "aitutor-npm" } }, (res) => {
         if (
           res.statusCode >= 300 &&
