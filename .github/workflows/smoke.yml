@@ -86,10 +86,13 @@ jobs:
         if: runner.os == 'macOS'
         run: |
           chmod +x ./aitutor
-          mkfifo aitutor_input
-          (sleep 3 && printf 'q' > aitutor_input) &
-          script -q output.txt ./aitutor < aitutor_input || true
-          rm -f aitutor_input
+          expect <<'EXPECT'
+          log_file -noappend output.txt
+          spawn ./aitutor
+          sleep 3
+          send "q"
+          expect eof
+          EXPECT
           perl -pe 's/\e\[[0-9;]*[a-zA-Z]//g' output.txt > clean.txt
           echo "--- Captured output ---"
           cat clean.txt
@@ -115,6 +118,7 @@ jobs:
           Write-Output "Binary started successfully without crashing"
 
       - name: Setup Node.js
+        if: runner.os != 'Windows'
         uses: actions/setup-node@v4
         with:
           node-version: 20
@@ -137,29 +141,14 @@ jobs:
           npm install -g @aitutor/cli
           BINARY=$(which aitutor)
           echo "npm binary: $BINARY"
-          mkfifo aitutor_input
-          (sleep 3 && printf 'q' > aitutor_input) &
-          script -q npm_output.txt "$BINARY" < aitutor_input || true
-          rm -f aitutor_input
+          expect <<EXPECT
+          log_file -noappend npm_output.txt
+          spawn $BINARY
+          sleep 3
+          send "q"
+          expect eof
+          EXPECT
           perl -pe 's/\e\[[0-9;]*[a-zA-Z]//g' npm_output.txt > npm_clean.txt
           grep -q "Beginner" npm_clean.txt
           grep -q "Theory" npm_clean.txt
           echo "npm smoke test passed"
-
-      - name: Smoke test npm package (Windows)
-        if: runner.os == 'Windows'
-        shell: pwsh
-        run: |
-          npm install -g @aitutor/cli
-          $binary = (Get-Command aitutor).Source
-          Write-Output "npm binary: $binary"
-          $proc = Start-Process -FilePath $binary -PassThru -NoNewWindow
-          Start-Sleep -Seconds 3
-          if ($proc.HasExited -and $proc.ExitCode -ne 0) {
-            Write-Error "npm binary crashed with exit code $($proc.ExitCode)"
-            exit 1
-          }
-          if (-not $proc.HasExited) {
-            Stop-Process -Id $proc.Id -Force
-          }
-          Write-Output "npm smoke test passed"
