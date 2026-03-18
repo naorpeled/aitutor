@@ -71,7 +71,7 @@ jobs:
         run: |
           chmod +x ./aitutor
           timeout 5 script -qec "./aitutor" output.txt || true
-          sed 's/\x1b\[[0-9;]*[a-zA-Z]//g' output.txt > clean.txt
+          perl -pe 's/\e\[[0-9;]*[a-zA-Z]//g' output.txt > clean.txt
           echo "--- Captured output ---"
           cat clean.txt
           echo "--- Checking content ---"
@@ -87,7 +87,7 @@ jobs:
         run: |
           chmod +x ./aitutor
           perl -e 'alarm 5; exec @ARGV' script -q output.txt ./aitutor || true
-          sed 's/\x1b\[[0-9;]*[a-zA-Z]//g' output.txt > clean.txt
+          perl -pe 's/\e\[[0-9;]*[a-zA-Z]//g' output.txt > clean.txt
           echo "--- Captured output ---"
           cat clean.txt
           echo "--- Checking content ---"
@@ -125,7 +125,7 @@ jobs:
           BINARY=$(which aitutor)
           echo "npm binary: $BINARY"
           timeout 5 script -qec "$BINARY" npm_output.txt || true
-          sed 's/\x1b\[[0-9;]*[a-zA-Z]//g' npm_output.txt > npm_clean.txt
+          perl -pe 's/\e\[[0-9;]*[a-zA-Z]//g' npm_output.txt > npm_clean.txt
           grep -q "AITutor" npm_clean.txt
           grep -q "Interactive AI Coding Concepts" npm_clean.txt
           echo "npm smoke test passed"
@@ -137,7 +137,7 @@ jobs:
           BINARY=$(which aitutor)
           echo "npm binary: $BINARY"
           perl -e 'alarm 5; exec @ARGV' script -q npm_output.txt "$BINARY" || true
-          sed 's/\x1b\[[0-9;]*[a-zA-Z]//g' npm_output.txt > npm_clean.txt
+          perl -pe 's/\e\[[0-9;]*[a-zA-Z]//g' npm_output.txt > npm_clean.txt
           grep -q "AITutor" npm_clean.txt
           grep -q "Interactive AI Coding Concepts" npm_clean.txt
           echo "npm smoke test passed"
