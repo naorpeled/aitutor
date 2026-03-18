@@ -1,8 +1,7 @@
 #!/usr/bin/env node
 
 const { execFileSync } = require("child_process");
-const { createWriteStream, readFileSync, chmodSync, unlinkSync, mkdtempSync, renameSync, rmSync } = require("fs");
-const crypto = require("crypto");
+const { createWriteStream, chmodSync, unlinkSync, mkdtempSync, renameSync, rmSync } = require("fs");
 const os = require("os");
 const https = require("https");
 const path = require("path");
@@ -70,53 +69,20 @@ function follow(url, depth = 0) {
   });
 }
 
-async function fetchChecksums() {
-  const url = `https://github.com/${REPO}/releases/download/v${VERSION}/checksums.txt`;
-  const res = await follow(url);
-  const chunks = [];
-  for await (const chunk of res) chunks.push(chunk);
-  const body = Buffer.concat(chunks).toString("utf8");
-  const checksums = {};
-  for (const line of body.trim().split("\n")) {
-    const [hash, filename] = line.trim().split(/\s+/);
-    if (hash && filename) checksums[filename] = hash;
-  }
-  return checksums;
-}
-
-function verifyChecksum(filePath, expectedHash) {
-  const data = readFileSync(filePath);
-  const actual = crypto.createHash("sha256").update(data).digest("hex");
-  if (actual !== expectedHash) {
-    throw new Error(
-      `Checksum mismatch for ${path.basename(filePath)}\n` +
-        `  Expected: ${expectedHash}\n` +
-        `  Actual:   ${actual}\n` +
-        `The downloaded file may have been tampered with.`
-    );
-  }
-}
-
 async function install() {
   const url = getDownloadURL();
-  const archiveName = path.basename(url);
   const binName = getBinaryName();
   const binPath = path.join(__dirname, binName);
 
   console.log(`Downloading aitutor v${VERSION}...`);
   console.log(`  ${url}`);
 
-  const [res, checksums] = await Promise.all([follow(url), fetchChecksums()]);
-  const expectedHash = checksums[archiveName];
-  if (!expectedHash) {
-    throw new Error(`No checksum found for ${archiveName} in checksums.txt`);
-  }
+  const res = await follow(url);
 
   if (process.platform === "win32") {
     const zipPath = path.join(__dirname, "aitutor.zip");
     const tmpDir = mkdtempSync(path.join(os.tmpdir(), "aitutor-"));
     await pipeline(res, createWriteStream(zipPath));
-    verifyChecksum(zipPath, expectedHash);
     const psEscape = (s) => s.replace(/'/g, "''");
     execFileSync("powershell.exe", [
       "-NoProfile",
@@ -130,7 +96,6 @@ async function install() {
   } else {
     const tarPath = path.join(__dirname, "aitutor.tar.gz");
     await pipeline(res, createWriteStream(tarPath));
-    verifyChecksum(tarPath, expectedHash);
     execFileSync("tar", ["-xzf", tarPath, "-C", __dirname, binName], {
       stdio: "ignore",
     });
