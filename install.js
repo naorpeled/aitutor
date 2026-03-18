@@ -1,7 +1,8 @@
 #!/usr/bin/env node
 
 const { execSync, execFileSync } = require("child_process");
-const { createWriteStream, chmodSync, unlinkSync } = require("fs");
+const { createWriteStream, chmodSync, unlinkSync, mkdtempSync, renameSync, rmSync } = require("fs");
+const os = require("os");
 const https = require("https");
 const http = require("http");
 const path = require("path");
@@ -75,13 +76,16 @@ async function install() {
 
   if (process.platform === "win32") {
     const zipPath = path.join(__dirname, "aitutor.zip");
+    const tmpDir = mkdtempSync(path.join(os.tmpdir(), "aitutor-"));
     await pipeline(res, createWriteStream(zipPath));
     execFileSync("powershell.exe", [
       "-NoProfile",
       "-NonInteractive",
       "-Command",
-      `Expand-Archive -LiteralPath '${zipPath}' -DestinationPath '${__dirname}' -Force -ErrorAction Stop`,
+      `Expand-Archive -LiteralPath '${zipPath}' -DestinationPath '${tmpDir}' -Force -ErrorAction Stop`,
     ], { stdio: "ignore" });
+    renameSync(path.join(tmpDir, binName), binPath);
+    rmSync(tmpDir, { recursive: true, force: true });
     unlinkSync(zipPath);
   } else {
     const tarPath = path.join(__dirname, "aitutor.tar.gz");
