@@ -86,14 +86,13 @@ jobs:
         if: runner.os == 'macOS'
         run: |
           chmod +x ./aitutor
-          expect <<'EXPECT'
-          log_file -noappend output.txt
+          expect <<'EXPECT' > output.txt 2>&1
           spawn ./aitutor
           sleep 3
           send "q"
           expect eof
           EXPECT
-          perl -pe 's/\e\[[0-9;]*[a-zA-Z]//g' output.txt > clean.txt
+          perl -pe 's/\e\[[\?0-9;]*[a-zA-Z]//g' output.txt > clean.txt
           echo "--- Captured output ---"
           cat clean.txt
           echo "--- Checking content ---"
@@ -141,14 +140,13 @@ jobs:
           npm install -g @aitutor/cli
           BINARY=$(which aitutor)
           echo "npm binary: $BINARY"
-          expect <<EXPECT
-          log_file -noappend npm_output.txt
+          expect <<EXPECT > npm_output.txt 2>&1
           spawn $BINARY
           sleep 3
           send "q"
           expect eof
           EXPECT
-          perl -pe 's/\e\[[0-9;]*[a-zA-Z]//g' npm_output.txt > npm_clean.txt
+          perl -pe 's/\e\[[\?0-9;]*[a-zA-Z]//g' npm_output.txt > npm_clean.txt
           grep -q "Beginner" npm_clean.txt
           grep -q "Theory" npm_clean.txt
           echo "npm smoke test passed"
