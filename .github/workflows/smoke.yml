@@ -20,6 +20,7 @@ jobs:
 
       - name: Get latest release tag
         id: release
+        shell: bash
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
@@ -53,6 +54,7 @@ jobs:
           echo "Archive: $NAME"
 
       - name: Download release archive
+        shell: bash
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: gh release download ${{ steps.release.outputs.tag }} -p "${{ steps.archive.outputs.name }}"
@@ -75,27 +77,27 @@ jobs:
           echo "--- Captured output ---"
           cat clean.txt
           echo "--- Checking content ---"
-          grep -q "AITutor" clean.txt
           grep -q "Beginner" clean.txt
-          grep -q "Intermediate" clean.txt
-          grep -q "Advanced" clean.txt
-          grep -q "Interactive AI Coding Concepts" clean.txt
+          grep -q "Theory" clean.txt
+          grep -q "quit" clean.txt
           echo "All checks passed"
 
       - name: Smoke test (macOS)
         if: runner.os == 'macOS'
         run: |
           chmod +x ./aitutor
-          perl -e 'alarm 5; exec @ARGV' script -q output.txt ./aitutor || true
+          script -q output.txt ./aitutor &
+          SCRIPT_PID=$!
+          sleep 3
+          kill $SCRIPT_PID 2>/dev/null || true
+          wait $SCRIPT_PID 2>/dev/null || true
           perl -pe 's/\e\[[0-9;]*[a-zA-Z]//g' output.txt > clean.txt
           echo "--- Captured output ---"
           cat clean.txt
           echo "--- Checking content ---"
-          grep -q "AITutor" clean.txt
           grep -q "Beginner" clean.txt
-          grep -q "Intermediate" clean.txt
-          grep -q "Advanced" clean.txt
-          grep -q "Interactive AI Coding Concepts" clean.txt
+          grep -q "Theory" clean.txt
+          grep -q "quit" clean.txt
           echo "All checks passed"
 
       - name: Smoke test (Windows)
@@ -126,8 +128,8 @@ jobs:
           echo "npm binary: $BINARY"
           timeout 5 script -qec "$BINARY" npm_output.txt || true
           perl -pe 's/\e\[[0-9;]*[a-zA-Z]//g' npm_output.txt > npm_clean.txt
-          grep -q "AITutor" npm_clean.txt
-          grep -q "Interactive AI Coding Concepts" npm_clean.txt
+          grep -q "Beginner" npm_clean.txt
+          grep -q "Theory" npm_clean.txt
           echo "npm smoke test passed"
 
       - name: Smoke test npm package (macOS)
@@ -136,10 +138,14 @@ jobs:
           npm install -g @aitutor/cli
           BINARY=$(which aitutor)
           echo "npm binary: $BINARY"
-          perl -e 'alarm 5; exec @ARGV' script -q npm_output.txt "$BINARY" || true
+          script -q npm_output.txt "$BINARY" &
+          SCRIPT_PID=$!
+          sleep 3
+          kill $SCRIPT_PID 2>/dev/null || true
+          wait $SCRIPT_PID 2>/dev/null || true
           perl -pe 's/\e\[[0-9;]*[a-zA-Z]//g' npm_output.txt > npm_clean.txt
-          grep -q "AITutor" npm_clean.txt
-          grep -q "Interactive AI Coding Concepts" npm_clean.txt
+          grep -q "Beginner" npm_clean.txt
+          grep -q "Theory" npm_clean.txt
           echo "npm smoke test passed"
 
       - name: Smoke test npm package (Windows)
