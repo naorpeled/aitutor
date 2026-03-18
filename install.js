@@ -78,11 +78,12 @@ async function install() {
     const zipPath = path.join(__dirname, "aitutor.zip");
     const tmpDir = mkdtempSync(path.join(os.tmpdir(), "aitutor-"));
     await pipeline(res, createWriteStream(zipPath));
+    const psEscape = (s) => s.replace(/'/g, "''");
     execFileSync("powershell.exe", [
       "-NoProfile",
       "-NonInteractive",
       "-Command",
-      `Expand-Archive -LiteralPath '${zipPath}' -DestinationPath '${tmpDir}' -Force -ErrorAction Stop`,
+      `Expand-Archive -LiteralPath '${psEscape(zipPath)}' -DestinationPath '${psEscape(tmpDir)}' -Force -ErrorAction Stop`,
     ], { stdio: "ignore" });
     renameSync(path.join(tmpDir, binName), binPath);
     rmSync(tmpDir, { recursive: true, force: true });
