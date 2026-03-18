@@ -76,9 +76,10 @@ async function install() {
   if (process.platform === "win32") {
     const zipPath = path.join(__dirname, "aitutor.zip");
     await pipeline(res, createWriteStream(zipPath));
-    execSync(`tar -xf "${zipPath}" "${binName}" -C "${__dirname}"`, {
-      stdio: "ignore",
-    });
+    execSync(
+      `powershell -Command "Expand-Archive -Path '${zipPath}' -DestinationPath '${__dirname}' -Force"`,
+      { stdio: "ignore" }
+    );
     unlinkSync(zipPath);
   } else {
     const tarPath = path.join(__dirname, "aitutor.tar.gz");
