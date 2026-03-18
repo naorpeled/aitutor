@@ -1,15 +1,15 @@
 #!/usr/bin/env node
 
-const { execSync, execFileSync } = require("child_process");
+const { execFileSync } = require("child_process");
 const { createWriteStream, chmodSync, unlinkSync, mkdtempSync, renameSync, rmSync } = require("fs");
 const os = require("os");
 const https = require("https");
-const http = require("http");
 const path = require("path");
 const { pipeline } = require("stream/promises");
 
 const VERSION = require("./package.json").version;
 const REPO = "naorpeled/aitutor";
+const MAX_REDIRECTS = 10;
 
 const PLATFORM_MAP = {
   darwin: "darwin",
@@ -41,17 +41,22 @@ function getBinaryName() {
   return process.platform === "win32" ? "aitutor.exe" : "aitutor";
 }
 
-function follow(url) {
+function follow(url, depth = 0) {
+  if (depth > MAX_REDIRECTS) {
+    return Promise.reject(new Error(`Too many redirects (max ${MAX_REDIRECTS})`));
+  }
+  if (!url.startsWith("https://")) {
+    return Promise.reject(new Error(`Refusing non-HTTPS URL: ${url}`));
+  }
   return new Promise((resolve, reject) => {
-    const mod = url.startsWith("https") ? https : http;
-    mod
+    https
       .get(url, { headers: { "User-Agent": "aitutor-npm" } }, (res) => {
         if (
           res.statusCode >= 300 &&
           res.statusCode < 400 &&
           res.headers.location
         ) {
-          return follow(res.headers.location).then(resolve, reject);
+          return follow(res.headers.location, depth + 1).then(resolve, reject);
         }
         if (res.statusCode !== 200) {
           return reject(
@@ -91,7 +96,7 @@ async function install() {
   } else {
     const tarPath = path.join(__dirname, "aitutor.tar.gz");
     await pipeline(res, createWriteStream(tarPath));
-    execSync(`tar -xzf "${tarPath}" -C "${__dirname}" "${binName}"`, {
+    execFileSync("tar", ["-xzf", tarPath, "-C", __dirname, binName], {
       stdio: "ignore",
     });
     unlinkSync(tarPath);
