@@ -1,0 +1,157 @@
+name: Smoke Tests
+
+on:
+  schedule:
+    - cron: "0 6 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  smoke:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Get latest release tag
+        id: release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          TAG=$(gh release view --json tagName -q .tagName)
+          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
+          echo "Latest release: $TAG"
+
+      - name: Map runner to archive name
+        id: archive
+        shell: bash
+        run: |
+          case "$RUNNER_OS" in
+            Linux)  OS=linux  ;;
+            macOS)  OS=darwin ;;
+            Windows) OS=windows ;;
+          esac
+          case "$RUNNER_ARCH" in
+            X64)   ARCH=amd64 ;;
+            ARM64) ARCH=arm64 ;;
+          esac
+          if [ "$OS" = "windows" ]; then
+            NAME="aitutor_${OS}_${ARCH}.zip"
+          else
+            NAME="aitutor_${OS}_${ARCH}.tar.gz"
+          fi
+          echo "name=$NAME" >> "$GITHUB_OUTPUT"
+          echo "os=$OS" >> "$GITHUB_OUTPUT"
+          echo "Archive: $NAME"
+
+      - name: Download release archive
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: gh release download ${{ steps.release.outputs.tag }} -p "${{ steps.archive.outputs.name }}"
+
+      - name: Extract binary (Linux/macOS)
+        if: runner.os != 'Windows'
+        run: tar xzf ${{ steps.archive.outputs.name }}
+
+      - name: Extract binary (Windows)
+        if: runner.os == 'Windows'
+        run: unzip ${{ steps.archive.outputs.name }}
+
+      - name: Smoke test (Linux)
+        if: runner.os == 'Linux'
+        run: |
+          chmod +x ./aitutor
+          timeout 5 script -qec "./aitutor" output.txt || true
+          sed 's/\x1b\[[0-9;]*[a-zA-Z]//g' output.txt > clean.txt
+          echo "--- Captured output ---"
+          cat clean.txt
+          echo "--- Checking content ---"
+          grep -q "AITutor" clean.txt
+          grep -q "Beginner" clean.txt
+          grep -q "Intermediate" clean.txt
+          grep -q "Advanced" clean.txt
+          grep -q "Interactive AI Coding Concepts" clean.txt
+          echo "All checks passed"
+
+      - name: Smoke test (macOS)
+        if: runner.os == 'macOS'
+        run: |
+          chmod +x ./aitutor
+          timeout 5 script -q output.txt ./aitutor || true
+          sed 's/\x1b\[[0-9;]*[a-zA-Z]//g' output.txt > clean.txt
+          echo "--- Captured output ---"
+          cat clean.txt
+          echo "--- Checking content ---"
+          grep -q "AITutor" clean.txt
+          grep -q "Beginner" clean.txt
+          grep -q "Intermediate" clean.txt
+          grep -q "Advanced" clean.txt
+          grep -q "Interactive AI Coding Concepts" clean.txt
+          echo "All checks passed"
+
+      - name: Smoke test (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          $proc = Start-Process -FilePath .\aitutor.exe -PassThru -NoNewWindow
+          Start-Sleep -Seconds 3
+          if ($proc.HasExited -and $proc.ExitCode -ne 0) {
+            Write-Error "Binary crashed with exit code $($proc.ExitCode)"
+            exit 1
+          }
+          if (-not $proc.HasExited) {
+            Stop-Process -Id $proc.Id -Force
+          }
+          Write-Output "Binary started successfully without crashing"
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Smoke test npm package (Linux)
+        if: runner.os == 'Linux'
+        run: |
+          npm install -g @aitutor/cli
+          BINARY=$(which aitutor)
+          echo "npm binary: $BINARY"
+          timeout 5 script -qec "$BINARY" npm_output.txt || true
+          sed 's/\x1b\[[0-9;]*[a-zA-Z]//g' npm_output.txt > npm_clean.txt
+          grep -q "AITutor" npm_clean.txt
+          grep -q "Interactive AI Coding Concepts" npm_clean.txt
+          echo "npm smoke test passed"
+
+      - name: Smoke test npm package (macOS)
+        if: runner.os == 'macOS'
+        run: |
+          npm install -g @aitutor/cli
+          BINARY=$(which aitutor)
+          echo "npm binary: $BINARY"
+          timeout 5 script -q npm_output.txt "$BINARY" || true
+          sed 's/\x1b\[[0-9;]*[a-zA-Z]//g' npm_output.txt > npm_clean.txt
+          grep -q "AITutor" npm_clean.txt
+          grep -q "Interactive AI Coding Concepts" npm_clean.txt
+          echo "npm smoke test passed"
+
+      - name: Smoke test npm package (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          npm install -g @aitutor/cli
+          $binary = (Get-Command aitutor).Source
+          Write-Output "npm binary: $binary"
+          $proc = Start-Process -FilePath $binary -PassThru -NoNewWindow
+          Start-Sleep -Seconds 3
+          if ($proc.HasExited -and $proc.ExitCode -ne 0) {
+            Write-Error "npm binary crashed with exit code $($proc.ExitCode)"
+            exit 1
+          }
+          if (-not $proc.HasExited) {
+            Stop-Process -Id $proc.Id -Force
+          }
+          Write-Output "npm smoke test passed"
