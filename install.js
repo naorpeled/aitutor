@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-const { execSync } = require("child_process");
+const { execSync, execFileSync } = require("child_process");
 const { createWriteStream, chmodSync, unlinkSync } = require("fs");
 const https = require("https");
 const http = require("http");
@@ -76,10 +76,12 @@ async function install() {
   if (process.platform === "win32") {
     const zipPath = path.join(__dirname, "aitutor.zip");
     await pipeline(res, createWriteStream(zipPath));
-    execSync(
-      `powershell -Command "Expand-Archive -Path '${zipPath}' -DestinationPath '${__dirname}' -Force"`,
-      { stdio: "ignore" }
-    );
+    execFileSync("powershell.exe", [
+      "-NoProfile",
+      "-NonInteractive",
+      "-Command",
+      `Expand-Archive -LiteralPath '${zipPath}' -DestinationPath '${__dirname}' -Force -ErrorAction Stop`,
+    ], { stdio: "ignore" });
     unlinkSync(zipPath);
   } else {
     const tarPath = path.join(__dirname, "aitutor.tar.gz");
