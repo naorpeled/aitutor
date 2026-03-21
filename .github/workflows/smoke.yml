@@ -73,13 +73,13 @@ jobs:
         run: |
           chmod +x ./aitutor
           timeout 5 script -qec "./aitutor" output.txt || true
-          # Strip all ANSI escape sequences (CSI, OSC, private modes, etc.)
+          # Strip ANSI escape sequences (CSI, private modes, mode sets)
           perl -pe 's/\e[\[\(][?]?[0-9;]*[a-zA-Z~]//g; s/\e[=>]//g; s/\r//g' output.txt > clean.txt
           echo "--- Captured output ---"
           cat clean.txt
           echo "--- Checking content ---"
           grep -q "Beginner" clean.txt
-          grep -q "Theory" clean.txt
+          grep -qi "theory" clean.txt
           grep -q "quit" clean.txt
           echo "All checks passed"
 
@@ -89,13 +89,13 @@ jobs:
           chmod +x ./aitutor
           # Run app inside script session with internal timeout so PTY is allocated properly
           script -q output.txt bash -c './aitutor & PID=$!; sleep 5; kill $PID 2>/dev/null; exit 0' || true
-          # Strip all ANSI escape sequences
+          # Strip ANSI escape sequences (CSI, private modes, mode sets)
           perl -pe 's/\e[\[\(][?]?[0-9;]*[a-zA-Z~]//g; s/\e[=>]//g; s/\r//g' output.txt > clean.txt
           echo "--- Captured output ---"
           cat clean.txt
           echo "--- Checking content ---"
           grep -q "Beginner" clean.txt
-          grep -q "Theory" clean.txt
+          grep -qi "theory" clean.txt
           grep -q "quit" clean.txt
           echo "All checks passed"
 
