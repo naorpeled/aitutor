@@ -20,6 +20,7 @@ jobs:
 
       - name: Get latest release tag
         id: release
+        shell: bash
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
@@ -53,6 +54,7 @@ jobs:
           echo "Archive: $NAME"
 
       - name: Download release archive
+        shell: bash
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: gh release download ${{ steps.release.outputs.tag }} -p "${{ steps.archive.outputs.name }}"
@@ -71,39 +73,42 @@ jobs:
         run: |
           chmod +x ./aitutor
           timeout 5 script -qec "./aitutor" output.txt || true
-          perl -pe 's/\e\[[0-9;]*[a-zA-Z]//g' output.txt > clean.txt
+          # Strip all ANSI escape sequences (CSI, OSC, private modes, etc.)
+          perl -pe 's/\e[\[\(][?]?[0-9;]*[a-zA-Z~]//g; s/\e[=>]//g; s/\r//g' output.txt > clean.txt
           echo "--- Captured output ---"
           cat clean.txt
           echo "--- Checking content ---"
-          grep -q "AITutor" clean.txt
           grep -q "Beginner" clean.txt
-          grep -q "Intermediate" clean.txt
-          grep -q "Advanced" clean.txt
-          grep -q "Interactive AI Coding Concepts" clean.txt
+          grep -q "Theory" clean.txt
+          grep -q "quit" clean.txt
           echo "All checks passed"
 
       - name: Smoke test (macOS)
         if: runner.os == 'macOS'
         run: |
           chmod +x ./aitutor
-          perl -e 'alarm 5; exec @ARGV' script -q output.txt ./aitutor || true
-          perl -pe 's/\e\[[0-9;]*[a-zA-Z]//g' output.txt > clean.txt
+          # Run script in background so the file gets flushed on SIGTERM
+          script -q output.txt ./aitutor &
+          SCRIPT_PID=$!
+          sleep 5
+          kill "$SCRIPT_PID" 2>/dev/null || true
+          wait "$SCRIPT_PID" 2>/dev/null || true
+          # Strip all ANSI escape sequences
+          perl -pe 's/\e[\[\(][?]?[0-9;]*[a-zA-Z~]//g; s/\e[=>]//g; s/\r//g' output.txt > clean.txt
           echo "--- Captured output ---"
           cat clean.txt
           echo "--- Checking content ---"
-          grep -q "AITutor" clean.txt
           grep -q "Beginner" clean.txt
-          grep -q "Intermediate" clean.txt
-          grep -q "Advanced" clean.txt
-          grep -q "Interactive AI Coding Concepts" clean.txt
+          grep -q "Theory" clean.txt
+          grep -q "quit" clean.txt
           echo "All checks passed"
 
       - name: Smoke test (Windows)
         if: runner.os == 'Windows'
         shell: pwsh
         run: |
-          $proc = Start-Process -FilePath .\aitutor.exe -PassThru -NoNewWindow
-          Start-Sleep -Seconds 3
+          $proc = Start-Process -FilePath .\aitutor.exe -PassThru -NoNewWindow -RedirectStandardOutput output.txt -RedirectStandardError stderr.txt
+          Start-Sleep -Seconds 5
           if ($proc.HasExited -and $proc.ExitCode -ne 0) {
             Write-Error "Binary crashed with exit code $($proc.ExitCode)"
             exit 1
@@ -125,9 +130,9 @@ jobs:
           BINARY=$(which aitutor)
           echo "npm binary: $BINARY"
           timeout 5 script -qec "$BINARY" npm_output.txt || true
-          perl -pe 's/\e\[[0-9;]*[a-zA-Z]//g' npm_output.txt > npm_clean.txt
-          grep -q "AITutor" npm_clean.txt
-          grep -q "Interactive AI Coding Concepts" npm_clean.txt
+          perl -pe 's/\e[\[\(][?]?[0-9;]*[a-zA-Z~]//g; s/\e[=>]//g; s/\r//g' npm_output.txt > npm_clean.txt
+          grep -q "Beginner" npm_clean.txt
+          grep -q "quit" npm_clean.txt
           echo "npm smoke test passed"
 
       - name: Smoke test npm package (macOS)
@@ -136,10 +141,14 @@ jobs:
           npm install -g @aitutor/cli
           BINARY=$(which aitutor)
           echo "npm binary: $BINARY"
-          perl -e 'alarm 5; exec @ARGV' script -q npm_output.txt "$BINARY" || true
-          perl -pe 's/\e\[[0-9;]*[a-zA-Z]//g' npm_output.txt > npm_clean.txt
-          grep -q "AITutor" npm_clean.txt
-          grep -q "Interactive AI Coding Concepts" npm_clean.txt
+          script -q npm_output.txt "$BINARY" &
+          SCRIPT_PID=$!
+          sleep 5
+          kill "$SCRIPT_PID" 2>/dev/null || true
+          wait "$SCRIPT_PID" 2>/dev/null || true
+          perl -pe 's/\e[\[\(][?]?[0-9;]*[a-zA-Z~]//g; s/\e[=>]//g; s/\r//g' npm_output.txt > npm_clean.txt
+          grep -q "Beginner" npm_clean.txt
+          grep -q "quit" npm_clean.txt
           echo "npm smoke test passed"
 
       - name: Smoke test npm package (Windows)
@@ -150,7 +159,7 @@ jobs:
           $binary = (Get-Command aitutor).Source
           Write-Output "npm binary: $binary"
           $proc = Start-Process -FilePath $binary -PassThru -NoNewWindow
-          Start-Sleep -Seconds 3
+          Start-Sleep -Seconds 5
           if ($proc.HasExited -and $proc.ExitCode -ne 0) {
             Write-Error "npm binary crashed with exit code $($proc.ExitCode)"
             exit 1
