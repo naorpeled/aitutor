@@ -96,11 +96,14 @@ async function install() {
     }
   } else {
     const tarPath = path.join(__dirname, "aitutor.tar.gz");
-    await pipeline(res, createWriteStream(tarPath));
-    execFileSync("tar", ["-xzf", tarPath, "-C", __dirname, binName], {
-      stdio: "ignore",
-    });
-    unlinkSync(tarPath);
+    try {
+      await pipeline(res, createWriteStream(tarPath));
+      execFileSync("tar", ["-xzf", tarPath, "-C", __dirname, binName], {
+        stdio: "ignore",
+      });
+    } finally {
+      try { unlinkSync(tarPath); } catch {}
+    }
   }
 
   chmodSync(binPath, 0o755);
