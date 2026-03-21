@@ -149,7 +149,9 @@ jobs:
         shell: pwsh
         run: |
           npm install -g @aitutor/cli
-          $binary = (Get-Command aitutor).Source
+          # Get-Command returns the .ps1 wrapper; find the actual .exe in the package dir
+          $npmRoot = (npm root -g)
+          $binary = Join-Path $npmRoot "@aitutor\cli\aitutor.exe"
           Write-Output "npm binary: $binary"
           $proc = Start-Process -FilePath $binary -PassThru -NoNewWindow
           Start-Sleep -Seconds 5
