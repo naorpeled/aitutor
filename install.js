@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 const { execFileSync } = require("child_process");
-const { createWriteStream, chmodSync, unlinkSync, mkdtempSync, renameSync, rmSync } = require("fs");
+const { createWriteStream, copyFileSync, chmodSync, unlinkSync, mkdtempSync, rmSync } = require("fs");
 const os = require("os");
 const https = require("https");
 const http = require("http");
@@ -80,17 +80,20 @@ async function install() {
   if (process.platform === "win32") {
     const zipPath = path.join(__dirname, "aitutor.zip");
     const tmpDir = mkdtempSync(path.join(os.tmpdir(), "aitutor-"));
-    await pipeline(res, createWriteStream(zipPath));
-    const psEscape = (s) => s.replace(/'/g, "''");
-    execFileSync("powershell.exe", [
-      "-NoProfile",
-      "-NonInteractive",
-      "-Command",
-      `Expand-Archive -LiteralPath '${psEscape(zipPath)}' -DestinationPath '${psEscape(tmpDir)}' -Force -ErrorAction Stop`,
-    ], { stdio: "ignore" });
-    renameSync(path.join(tmpDir, binName), binPath);
-    rmSync(tmpDir, { recursive: true, force: true });
-    unlinkSync(zipPath);
+    try {
+      await pipeline(res, createWriteStream(zipPath));
+      const psEscape = (s) => s.replace(/'/g, "''");
+      execFileSync("powershell.exe", [
+        "-NoProfile",
+        "-NonInteractive",
+        "-Command",
+        `Expand-Archive -LiteralPath '${psEscape(zipPath)}' -DestinationPath '${psEscape(tmpDir)}' -Force -ErrorAction Stop`,
+      ]);
+      copyFileSync(path.join(tmpDir, binName), binPath);
+    } finally {
+      rmSync(tmpDir, { recursive: true, force: true });
+      try { unlinkSync(zipPath); } catch {}
+    }
   } else {
     const tarPath = path.join(__dirname, "aitutor.tar.gz");
     await pipeline(res, createWriteStream(tarPath));
