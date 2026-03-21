@@ -66,7 +66,7 @@ jobs:
       - name: Extract binary (Windows)
         if: runner.os == 'Windows'
         shell: pwsh
-        run: Expand-Archive -Path ${{ steps.archive.outputs.name }} -DestinationPath .
+        run: Expand-Archive -Path ${{ steps.archive.outputs.name }} -DestinationPath . -Force
 
       - name: Smoke test (Linux)
         if: runner.os == 'Linux'
@@ -87,12 +87,8 @@ jobs:
         if: runner.os == 'macOS'
         run: |
           chmod +x ./aitutor
-          # Run script in background so the file gets flushed on SIGTERM
-          script -q output.txt ./aitutor &
-          SCRIPT_PID=$!
-          sleep 5
-          kill "$SCRIPT_PID" 2>/dev/null || true
-          wait "$SCRIPT_PID" 2>/dev/null || true
+          # Run app inside script session with internal timeout so PTY is allocated properly
+          script -q output.txt bash -c './aitutor & PID=$!; sleep 5; kill $PID 2>/dev/null; exit 0' || true
           # Strip all ANSI escape sequences
           perl -pe 's/\e[\[\(][?]?[0-9;]*[a-zA-Z~]//g; s/\e[=>]//g; s/\r//g' output.txt > clean.txt
           echo "--- Captured output ---"
@@ -141,11 +137,8 @@ jobs:
           npm install -g @aitutor/cli
           BINARY=$(which aitutor)
           echo "npm binary: $BINARY"
-          script -q npm_output.txt "$BINARY" &
-          SCRIPT_PID=$!
-          sleep 5
-          kill "$SCRIPT_PID" 2>/dev/null || true
-          wait "$SCRIPT_PID" 2>/dev/null || true
+          export AITUTOR_BIN="$BINARY"
+          script -q npm_output.txt bash -c '$AITUTOR_BIN & PID=$!; sleep 5; kill $PID 2>/dev/null; exit 0' || true
           perl -pe 's/\e[\[\(][?]?[0-9;]*[a-zA-Z~]//g; s/\e[=>]//g; s/\r//g' npm_output.txt > npm_clean.txt
           grep -q "Beginner" npm_clean.txt
           grep -q "quit" npm_clean.txt
