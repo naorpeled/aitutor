@@ -83,7 +83,8 @@ async function install() {
     try {
       await pipeline(res, createWriteStream(zipPath));
       const psEscape = (s) => s.replace(/'/g, "''");
-      execFileSync("powershell.exe", [
+      const psPath = path.join(process.env.SystemRoot || "C:\\Windows", "System32", "WindowsPowerShell", "v1.0", "powershell.exe");
+      execFileSync(psPath, [
         "-NoProfile",
         "-NonInteractive",
         "-Command",
