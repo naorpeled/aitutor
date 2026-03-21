@@ -1,7 +1,8 @@
 #!/usr/bin/env node
 
-const { execSync } = require("child_process");
-const { createWriteStream, chmodSync, unlinkSync } = require("fs");
+const { execFileSync } = require("child_process");
+const { createWriteStream, copyFileSync, chmodSync, unlinkSync, mkdtempSync, rmSync } = require("fs");
+const os = require("os");
 const https = require("https");
 const http = require("http");
 const path = require("path");
@@ -40,9 +41,12 @@ function getBinaryName() {
   return process.platform === "win32" ? "aitutor.exe" : "aitutor";
 }
 
-function follow(url) {
+function follow(url, depth = 0) {
+  if (depth > 10) {
+    return Promise.reject(new Error("Too many redirects"));
+  }
+  const mod = url.startsWith("https") ? https : http;
   return new Promise((resolve, reject) => {
-    const mod = url.startsWith("https") ? https : http;
     mod
       .get(url, { headers: { "User-Agent": "aitutor-npm" } }, (res) => {
         if (
@@ -50,7 +54,7 @@ function follow(url) {
           res.statusCode < 400 &&
           res.headers.location
         ) {
-          return follow(res.headers.location).then(resolve, reject);
+          return follow(res.headers.location, depth + 1).then(resolve, reject);
         }
         if (res.statusCode !== 200) {
           return reject(
@@ -75,18 +79,32 @@ async function install() {
 
   if (process.platform === "win32") {
     const zipPath = path.join(__dirname, "aitutor.zip");
-    await pipeline(res, createWriteStream(zipPath));
-    execSync(`tar -xf "${zipPath}" "${binName}" -C "${__dirname}"`, {
-      stdio: "ignore",
-    });
-    unlinkSync(zipPath);
+    const tmpDir = mkdtempSync(path.join(os.tmpdir(), "aitutor-"));
+    try {
+      await pipeline(res, createWriteStream(zipPath));
+      const psEscape = (s) => s.replace(/'/g, "''");
+      const psPath = path.join(process.env.SystemRoot || "C:\\Windows", "System32", "WindowsPowerShell", "v1.0", "powershell.exe");
+      execFileSync(psPath, [
+        "-NoProfile",
+        "-NonInteractive",
+        "-Command",
+        `Expand-Archive -LiteralPath '${psEscape(zipPath)}' -DestinationPath '${psEscape(tmpDir)}' -Force -ErrorAction Stop`,
+      ]);
+      copyFileSync(path.join(tmpDir, binName), binPath);
+    } finally {
+      rmSync(tmpDir, { recursive: true, force: true });
+      try { unlinkSync(zipPath); } catch {}
+    }
   } else {
     const tarPath = path.join(__dirname, "aitutor.tar.gz");
-    await pipeline(res, createWriteStream(tarPath));
-    execSync(`tar -xzf "${tarPath}" -C "${__dirname}" "${binName}"`, {
-      stdio: "ignore",
-    });
-    unlinkSync(tarPath);
+    try {
+      await pipeline(res, createWriteStream(tarPath));
+      execFileSync("tar", ["-xzf", tarPath, "-C", __dirname, binName], {
+        stdio: "ignore",
+      });
+    } finally {
+      try { unlinkSync(tarPath); } catch {}
+    }
   }
 
   chmodSync(binPath, 0o755);

@@ -25,6 +25,9 @@
     "vimtutor",
     "learning"
   ],
+  "engines": {
+    "node": ">= 16"
+  },
   "author": "Naor Peled",
   "license": "MIT",
   "homepage": "https://github.com/naorpeled/aitutor",
