@@ -28,7 +28,7 @@ make install  # go install .
 
 ### Build & Verify (Windows)
 
-```bash
+```cmd
 build.bat build    # builds ./aitutor binary
 build.bat run      # go run .
 build.bat vet      # go vet ./...
