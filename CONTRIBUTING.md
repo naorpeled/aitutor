@@ -17,13 +17,22 @@ cd aitutor
 make build
 ```
 
-### Build & Verify
+### Build & Verify (Mac/Linux)
 
 ```bash
 make build    # builds ./aitutor binary
 make run      # go run .
 make vet      # go vet ./...
 make install  # go install .
+```
+
+### Build & Verify (Windows)
+
+```bash
+build.bat build    # builds ./aitutor binary
+build.bat run      # go run .
+build.bat vet      # go vet ./...
+build.bat install  # go install .
 ```
 
 After any change, always run:
@@ -76,6 +85,7 @@ type Model interface {
 ```
 
 Visualization rules:
+
 - Use `ui.Color*` constants from `internal/ui/styles.go` — never inline hex values
 - Use `Enter`/`Space` for primary interaction, `r` for reset
 - **Do NOT use** `Tab` (reserved for sidebar toggle) or left/right arrows (reserved for phase navigation)
