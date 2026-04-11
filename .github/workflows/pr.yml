@@ -32,17 +32,10 @@ jobs:
         shell: bash
         run: go build -ldflags "-X main.version=pr-${{ github.event.pull_request.number }}" -o aitutor${{ runner.os == 'Windows' && '.exe' || '' }} .
 
-      - name: Smoke test (Linux)
-        if: runner.os == 'Linux'
+      - name: Smoke test
+        shell: bash
         run: |
-          chmod +x ./aitutor
-          code=0
-          timeout 5 script -qec "./aitutor" output.txt || code=$?
-          # 124 = timeout killed the process (expected), 0 = clean exit
-          if [ "$code" -ne 0 ] && [ "$code" -ne 124 ]; then
-            echo "Binary exited unexpectedly with code $code"
-            exit 1
-          fi
+          ./aitutor${{ runner.os == 'Windows' && '.exe' || '' }} --smoke > output.txt
           perl -pe 's/\e[\[\(][?]?[0-9;]*[a-zA-Z~]//g; s/\e[=>]//g; s/\r//g' output.txt > clean.txt
           echo "--- Captured output ---"
           cat clean.txt
@@ -51,45 +44,3 @@ jobs:
           grep -qi "theory" clean.txt
           grep -q "quit" clean.txt
           echo "All checks passed"
-
-      - name: Smoke test (macOS)
-        if: runner.os == 'macOS'
-        run: |
-          chmod +x ./aitutor
-          script -q output.txt bash -c '
-            ./aitutor & PID=$!
-            sleep 2
-            if ! kill -0 $PID 2>/dev/null; then
-              wait $PID
-              echo "Binary exited unexpectedly with code $?"
-              exit 1
-            fi
-            sleep 3
-            kill $PID 2>/dev/null
-            exit 0
-          '
-          perl -pe 's/\e[\[\(][?]?[0-9;]*[a-zA-Z~]//g; s/\e[=>]//g; s/\r//g' output.txt > clean.txt
-          echo "--- Captured output ---"
-          cat clean.txt
-          echo "--- Checking content ---"
-          grep -q "Beginner" clean.txt
-          grep -qi "theory" clean.txt
-          grep -q "quit" clean.txt
-          echo "All checks passed"
-
-      - name: Smoke test (Windows)
-        if: runner.os == 'Windows'
-        shell: pwsh
-        run: |
-          # Windows CI has no PTY allocator, so we can only verify the binary
-          # starts without crashing. Content assertions run on Linux/macOS.
-          $proc = Start-Process -FilePath .\aitutor.exe -PassThru -NoNewWindow -RedirectStandardOutput output.txt -RedirectStandardError stderr.txt
-          Start-Sleep -Seconds 5
-          if ($proc.HasExited -and $proc.ExitCode -ne 0) {
-            Write-Error "Binary crashed with exit code $($proc.ExitCode)"
-            exit 1
-          }
-          if (-not $proc.HasExited) {
-            Stop-Process -Id $proc.Id -Force
-          }
-          Write-Output "Binary started successfully without crashing"

@@ -48,6 +48,20 @@ func (m AppModel) Init() tea.Cmd {
 	return animTick()
 }
 
+// SmokeInit initializes the model for smoke testing without a TTY.
+// It simulates a window size and loads lessons so View() renders real UI.
+func (m AppModel) SmokeInit() AppModel {
+	m.width = 120
+	m.height = 40
+	m.layout = ui.ComputeLayout(m.width, m.height, m.sidebarOpen)
+	m.header.Width = m.width
+	m.footer.Width = m.width
+	m.ready = true
+	m.showWelcome = false
+	m.loadLessons()
+	return m
+}
+
 func (m *AppModel) loadLessons() {
 	m.lessons = lesson.All()
 	if len(m.lessons) > 0 {
