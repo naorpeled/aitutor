@@ -16,13 +16,6 @@ import (
 var version = "dev"
 
 func main() {
-	if len(os.Args) > 1 && os.Args[1] == "--smoke" {
-		m := app.NewAppModel(version)
-		m = m.SmokeInit()
-		fmt.Print(m.View())
-		return
-	}
-
 	p := tea.NewProgram(
 		app.NewAppModel(version),
 		tea.WithAltScreen(),

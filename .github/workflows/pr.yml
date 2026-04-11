@@ -25,22 +25,5 @@ jobs:
       - name: Go vet
         run: go vet ./...
 
-      - name: Compile all packages
-        run: go build ./...
-
-      - name: Build binary
-        shell: bash
-        run: go build -ldflags "-X main.version=pr-${{ github.event.pull_request.number }}" -o aitutor${{ runner.os == 'Windows' && '.exe' || '' }} .
-
-      - name: Smoke test
-        shell: bash
-        run: |
-          ./aitutor${{ runner.os == 'Windows' && '.exe' || '' }} --smoke > output.txt
-          perl -pe 's/\e[\[\(][?]?[0-9;]*[a-zA-Z~]//g; s/\e[=>]//g; s/\r//g' output.txt > clean.txt
-          echo "--- Captured output ---"
-          cat clean.txt
-          echo "--- Checking content ---"
-          grep -q "Beginner" clean.txt
-          grep -qi "theory" clean.txt
-          grep -q "quit" clean.txt
-          echo "All checks passed"
+      - name: Build and test
+        run: go test -v -count=1 ./...
