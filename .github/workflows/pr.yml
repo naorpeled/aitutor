@@ -25,6 +25,9 @@ jobs:
       - name: Go vet
         run: go vet ./...
 
+      - name: Compile all packages
+        run: go build ./...
+
       - name: Build binary
         shell: bash
         run: go build -ldflags "-X main.version=pr-${{ github.event.pull_request.number }}" -o aitutor${{ runner.os == 'Windows' && '.exe' || '' }} .
@@ -33,7 +36,12 @@ jobs:
         if: runner.os == 'Linux'
         run: |
           chmod +x ./aitutor
-          timeout 5 script -qec "./aitutor" output.txt || true
+          timeout 5 script -qec "./aitutor" output.txt; code=$?
+          # 124 = timeout killed the process (expected), 0 = clean exit
+          if [ "$code" -ne 0 ] && [ "$code" -ne 124 ]; then
+            echo "Binary exited unexpectedly with code $code"
+            exit 1
+          fi
           perl -pe 's/\e[\[\(][?]?[0-9;]*[a-zA-Z~]//g; s/\e[=>]//g; s/\r//g' output.txt > clean.txt
           echo "--- Captured output ---"
           cat clean.txt
@@ -47,7 +55,18 @@ jobs:
         if: runner.os == 'macOS'
         run: |
           chmod +x ./aitutor
-          script -q output.txt bash -c './aitutor & PID=$!; sleep 5; kill $PID 2>/dev/null; exit 0' || true
+          script -q output.txt bash -c '
+            ./aitutor & PID=$!
+            sleep 2
+            if ! kill -0 $PID 2>/dev/null; then
+              wait $PID
+              echo "Binary exited unexpectedly with code $?"
+              exit 1
+            fi
+            sleep 3
+            kill $PID 2>/dev/null
+            exit 0
+          '
           perl -pe 's/\e[\[\(][?]?[0-9;]*[a-zA-Z~]//g; s/\e[=>]//g; s/\r//g' output.txt > clean.txt
           echo "--- Captured output ---"
           cat clean.txt
