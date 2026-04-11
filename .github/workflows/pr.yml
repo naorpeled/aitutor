@@ -36,7 +36,8 @@ jobs:
         if: runner.os == 'Linux'
         run: |
           chmod +x ./aitutor
-          timeout 5 script -qec "./aitutor" output.txt; code=$?
+          code=0
+          timeout 5 script -qec "./aitutor" output.txt || code=$?
           # 124 = timeout killed the process (expected), 0 = clean exit
           if [ "$code" -ne 0 ] && [ "$code" -ne 124 ]; then
             echo "Binary exited unexpectedly with code $code"
