@@ -79,29 +79,17 @@ jobs:
 
       - name: Smoke test (Windows)
         if: runner.os == 'Windows'
-        shell: bash
+        shell: pwsh
         run: |
-          # Git for Windows bundles winpty which allocates a PTY, letting us
-          # capture the Bubbletea TUI output the same way script does on Unix.
-          WINPTY="$(cmd //C "where winpty 2>nul")" || WINPTY=""
-          if [ -n "$WINPTY" ]; then
-            timeout 10 winpty -Xallow-non-tty -Xplain ./aitutor.exe > output.txt 2>&1 || code=$?
-            perl -pe 's/\e[\[\(][?]?[0-9;]*[a-zA-Z~]//g; s/\e[=>]//g; s/\r//g' output.txt > clean.txt
-            echo "--- Captured output ---"
-            cat clean.txt
-            echo "--- Checking content ---"
-            grep -q "Beginner" clean.txt
-            grep -qi "theory" clean.txt
-            grep -q "quit" clean.txt
-            echo "All checks passed"
-          else
-            echo "winpty not found, falling back to crash-only check"
-            ./aitutor.exe & PID=$!
-            sleep 5
-            if ! kill -0 $PID 2>/dev/null; then
-              echo "Binary exited early"
-              exit 1
-            fi
-            kill $PID 2>/dev/null
-            echo "Binary started successfully without crashing"
-          fi
+          # Windows CI has no PTY allocator, so we can only verify the binary
+          # starts without crashing. Content assertions run on Linux/macOS.
+          $proc = Start-Process -FilePath .\aitutor.exe -PassThru -NoNewWindow -RedirectStandardOutput output.txt -RedirectStandardError stderr.txt
+          Start-Sleep -Seconds 5
+          if ($proc.HasExited -and $proc.ExitCode -ne 0) {
+            Write-Error "Binary crashed with exit code $($proc.ExitCode)"
+            exit 1
+          }
+          if (-not $proc.HasExited) {
+            Stop-Process -Id $proc.Id -Force
+          }
+          Write-Output "Binary started successfully without crashing"
