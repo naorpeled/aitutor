@@ -1,0 +1,73 @@
+name: PR Validation
+
+on:
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+
+      - name: Go vet
+        run: go vet ./...
+
+      - name: Build binary
+        shell: bash
+        run: go build -ldflags "-X main.version=pr-${{ github.event.pull_request.number }}" -o aitutor${{ runner.os == 'Windows' && '.exe' || '' }} .
+
+      - name: Smoke test (Linux)
+        if: runner.os == 'Linux'
+        run: |
+          chmod +x ./aitutor
+          timeout 5 script -qec "./aitutor" output.txt || true
+          perl -pe 's/\e[\[\(][?]?[0-9;]*[a-zA-Z~]//g; s/\e[=>]//g; s/\r//g' output.txt > clean.txt
+          echo "--- Captured output ---"
+          cat clean.txt
+          echo "--- Checking content ---"
+          grep -q "Beginner" clean.txt
+          grep -qi "theory" clean.txt
+          grep -q "quit" clean.txt
+          echo "All checks passed"
+
+      - name: Smoke test (macOS)
+        if: runner.os == 'macOS'
+        run: |
+          chmod +x ./aitutor
+          script -q output.txt bash -c './aitutor & PID=$!; sleep 5; kill $PID 2>/dev/null; exit 0' || true
+          perl -pe 's/\e[\[\(][?]?[0-9;]*[a-zA-Z~]//g; s/\e[=>]//g; s/\r//g' output.txt > clean.txt
+          echo "--- Captured output ---"
+          cat clean.txt
+          echo "--- Checking content ---"
+          grep -q "Beginner" clean.txt
+          grep -qi "theory" clean.txt
+          grep -q "quit" clean.txt
+          echo "All checks passed"
+
+      - name: Smoke test (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          $proc = Start-Process -FilePath .\aitutor.exe -PassThru -NoNewWindow -RedirectStandardOutput output.txt -RedirectStandardError stderr.txt
+          Start-Sleep -Seconds 5
+          if ($proc.HasExited -and $proc.ExitCode -ne 0) {
+            Write-Error "Binary crashed with exit code $($proc.ExitCode)"
+            exit 1
+          }
+          if (-not $proc.HasExited) {
+            Stop-Process -Id $proc.Id -Force
+          }
+          Write-Output "Binary started successfully without crashing"
