@@ -103,7 +103,7 @@ jobs:
         if: runner.os == 'Windows'
         shell: pwsh
         run: |
-          $proc = Start-Process -FilePath .\aitutor.exe -PassThru -NoNewWindow -RedirectStandardOutput output.txt -RedirectStandardError stderr.txt
+          $proc = Start-Process -FilePath .\aitutor.exe -PassThru -NoNewWindow
           Start-Sleep -Seconds 5
           if ($proc.HasExited -and $proc.ExitCode -ne 0) {
             Write-Error "Binary crashed with exit code $($proc.ExitCode)"
