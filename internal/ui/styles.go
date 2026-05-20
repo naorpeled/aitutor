@@ -81,6 +81,37 @@ var (
 			Foreground(lipgloss.Color("#d1d5db")).
 			PaddingLeft(2)
 
+	// Shared visualization text styles
+	AccentStyle = lipgloss.NewStyle().
+			Bold(true).
+			Foreground(ColorAccent)
+
+	CorrectStyle = lipgloss.NewStyle().
+			Bold(true).
+			Foreground(ColorCorrect)
+
+	IncorrectStyle = lipgloss.NewStyle().
+			Bold(true).
+			Foreground(ColorIncorrect)
+
+	HighlightStyle = lipgloss.NewStyle().
+			Bold(true).
+			Foreground(ColorHighlight)
+
+	MutedStyle = lipgloss.NewStyle().
+			Foreground(ColorMuted)
+
+	BrightTextStyle = lipgloss.NewStyle().
+			Foreground(ColorBright)
+
+	IntermediateStyle = lipgloss.NewStyle().
+				Bold(true).
+				Foreground(ColorIntermediate)
+
+	BeginnerStyle = lipgloss.NewStyle().
+			Bold(true).
+			Foreground(ColorBeginner)
+
 	// Tier badges
 	TierBadge = map[int]lipgloss.Style{
 		0: lipgloss.NewStyle().Foreground(ColorBeginner).Bold(true),

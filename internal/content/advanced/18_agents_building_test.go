@@ -9,29 +9,31 @@ import (
 )
 
 func TestAgentsBuildingLessonCoversIssueTopics(t *testing.T) {
-	var found *types.LessonDef
-	for _, def := range lesson.All() {
-		if def.ID == 18 {
-			found = &def
+	defs := lesson.All()
+	found := -1
+	for i := range defs {
+		if defs[i].ID == 18 {
+			found = i
 			break
 		}
 	}
 
-	if found == nil {
+	if found == -1 {
 		t.Fatal("lesson 18 for agents building topics is not registered")
 	}
-	if found.Tier != types.Advanced {
-		t.Fatalf("lesson 18 tier = %s, want Advanced", found.Tier)
+	def := defs[found]
+	if def.Tier != types.Advanced {
+		t.Fatalf("lesson 18 tier = %v, want Advanced", def.Tier)
 	}
-	if found.VizBuilder == nil {
+	if def.VizBuilder == nil {
 		t.Fatal("lesson 18 must provide an interactive visualization")
 	}
-	if len(found.Questions) < 2 {
-		t.Fatalf("lesson 18 has %d quiz questions, want at least 2", len(found.Questions))
+	if len(def.Questions) < 2 {
+		t.Fatalf("lesson 18 has %d quiz questions, want at least 2", len(def.Questions))
 	}
 
 	var theory strings.Builder
-	for _, block := range found.Theory {
+	for _, block := range def.Theory {
 		theory.WriteString(block.Content)
 		theory.WriteString("\n")
 	}

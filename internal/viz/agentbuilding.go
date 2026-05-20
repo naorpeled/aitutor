@@ -6,7 +6,6 @@ import (
 
 	"github.com/charmbracelet/bubbles/key"
 	tea "github.com/charmbracelet/bubbletea"
-	"github.com/charmbracelet/lipgloss"
 	"github.com/naorpeled/aitutor/internal/ui"
 )
 
@@ -107,54 +106,45 @@ func (m *AgentBuildingModel) submit(choice string) {
 }
 
 func (m *AgentBuildingModel) View() string {
-	accent := lipgloss.NewStyle().Foreground(ui.ColorAccent).Bold(true)
-	good := lipgloss.NewStyle().Foreground(ui.ColorCorrect).Bold(true)
-	bad := lipgloss.NewStyle().Foreground(ui.ColorIncorrect).Bold(true)
-	highlight := lipgloss.NewStyle().Foreground(ui.ColorHighlight).Bold(true)
-	dim := lipgloss.NewStyle().Foreground(ui.ColorMuted)
-	text := lipgloss.NewStyle().Foreground(ui.ColorBright)
-	compact := lipgloss.NewStyle().Foreground(ui.ColorIntermediate).Bold(true)
-	memory := lipgloss.NewStyle().Foreground(ui.ColorBeginner).Bold(true)
-
 	var lines []string
 	lines = append(lines, "")
-	lines = append(lines, accent.Render("  Agent Builder Decisions"))
-	lines = append(lines, dim.Render("  Choose what the agent should do with context and memory."))
+	lines = append(lines, ui.AccentStyle.Render("  Agent Builder Decisions"))
+	lines = append(lines, ui.MutedStyle.Render("  Choose what the agent should do with context and memory."))
 	lines = append(lines, "")
 
-	lines = append(lines, dim.Render("  Active context"))
-	lines = append(lines, compact.Render("  [facts, files, trace, plan] -> compact when large but still useful"))
+	lines = append(lines, ui.MutedStyle.Render("  Active context"))
+	lines = append(lines, ui.IntermediateStyle.Render("  [facts, files, trace, plan] -> compact when large but still useful"))
 	lines = append(lines, "")
-	lines = append(lines, dim.Render("  Long-term memory"))
-	lines = append(lines, memory.Render("  [stable preferences, conventions, project facts] -> save for later"))
+	lines = append(lines, ui.MutedStyle.Render("  Long-term memory"))
+	lines = append(lines, ui.BeginnerStyle.Render("  [stable preferences, conventions, project facts] -> save for later"))
 	lines = append(lines, "")
 
 	if m.current >= len(m.scenarios) {
-		lines = append(lines, good.Render(fmt.Sprintf("  Exercise complete. Score: %d/%d", m.score, len(m.scenarios))))
-		lines = append(lines, "", dim.Render("  [r] Restart"))
+		lines = append(lines, ui.CorrectStyle.Render(fmt.Sprintf("  Exercise complete. Score: %d/%d", m.score, len(m.scenarios))))
+		lines = append(lines, "", ui.MutedStyle.Render("  [r] Restart"))
 		return strings.Join(lines, "\n")
 	}
 
 	scenario := m.scenarios[m.current]
-	lines = append(lines, dim.Render(fmt.Sprintf("  Scenario %d of %d", m.current+1, len(m.scenarios))))
-	lines = append(lines, text.Render("  "+scenario.Prompt))
+	lines = append(lines, ui.MutedStyle.Render(fmt.Sprintf("  Scenario %d of %d", m.current+1, len(m.scenarios))))
+	lines = append(lines, ui.BrightTextStyle.Render("  "+scenario.Prompt))
 	lines = append(lines, "")
 
 	if m.answered {
 		if m.choice == scenario.Answer {
-			lines = append(lines, good.Render("  Correct."))
+			lines = append(lines, ui.CorrectStyle.Render("  Correct."))
 		} else {
-			lines = append(lines, bad.Render("  Not quite."))
-			lines = append(lines, highlight.Render("  Better answer: "+scenario.Answer))
+			lines = append(lines, ui.IncorrectStyle.Render("  Not quite."))
+			lines = append(lines, ui.HighlightStyle.Render("  Better answer: "+scenario.Answer))
 		}
-		lines = append(lines, dim.Render("  "+scenario.Explanation))
-		lines = append(lines, "", highlight.Render("  Press Enter to continue"))
+		lines = append(lines, ui.MutedStyle.Render("  "+scenario.Explanation))
+		lines = append(lines, "", ui.HighlightStyle.Render("  Press Enter to continue"))
 	} else {
-		lines = append(lines, compact.Render("  [1/c] Compact context"))
-		lines = append(lines, memory.Render("  [2/m] Save long-term memory"))
-		lines = append(lines, highlight.Render("  [3/w] Keep working in active context"))
+		lines = append(lines, ui.IntermediateStyle.Render("  [1/c] Compact context"))
+		lines = append(lines, ui.BeginnerStyle.Render("  [2/m] Save long-term memory"))
+		lines = append(lines, ui.HighlightStyle.Render("  [3/w] Keep working in active context"))
 	}
 
-	lines = append(lines, "", dim.Render("  [1/c] Compact  [2/m] Memory  [3/w] Work  [r] Restart"))
+	lines = append(lines, "", ui.MutedStyle.Render("  [1/c] Compact  [2/m] Memory  [3/w] Work  [r] Restart"))
 	return strings.Join(lines, "\n")
 }
