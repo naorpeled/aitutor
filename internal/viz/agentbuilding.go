@@ -112,13 +112,6 @@ func (m *AgentBuildingModel) View() string {
 	lines = append(lines, ui.MutedStyle.Render("  Choose what the agent should do with context and memory."))
 	lines = append(lines, "")
 
-	lines = append(lines, ui.MutedStyle.Render("  Active context"))
-	lines = append(lines, ui.IntermediateStyle.Render("  [facts, files, trace, plan] -> compact when large but still useful"))
-	lines = append(lines, "")
-	lines = append(lines, ui.MutedStyle.Render("  Long-term memory"))
-	lines = append(lines, ui.BeginnerStyle.Render("  [stable preferences, conventions, project facts] -> save for later"))
-	lines = append(lines, "")
-
 	if m.current >= len(m.scenarios) {
 		lines = append(lines, ui.CorrectStyle.Render(fmt.Sprintf("  Exercise complete. Score: %d/%d", m.score, len(m.scenarios))))
 		lines = append(lines, "", ui.MutedStyle.Render("  [r] Restart"))
@@ -128,6 +121,13 @@ func (m *AgentBuildingModel) View() string {
 	scenario := m.scenarios[m.current]
 	lines = append(lines, ui.MutedStyle.Render(fmt.Sprintf("  Scenario %d of %d", m.current+1, len(m.scenarios))))
 	lines = append(lines, ui.BrightTextStyle.Render("  "+scenario.Prompt))
+	lines = append(lines, "")
+
+	lines = append(lines, ui.MutedStyle.Render("  Active context"))
+	lines = append(lines, ui.IntermediateStyle.Render("  [facts, files, trace, plan] -> compact when large but still useful"))
+	lines = append(lines, "")
+	lines = append(lines, ui.MutedStyle.Render("  Long-term memory"))
+	lines = append(lines, ui.BeginnerStyle.Render("  [stable preferences, conventions, project facts] -> save for later"))
 	lines = append(lines, "")
 
 	if m.answered {

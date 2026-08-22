@@ -38,7 +38,7 @@ func TestAgentsBuildingLessonCoversIssueTopics(t *testing.T) {
 		theory.WriteString("\n")
 	}
 	content := strings.ToLower(theory.String())
-	for _, topic := range []string{"compaction", "long-term memory"} {
+	for _, topic := range []string{"compaction", "long-term memory", "vector store", "retrieval-augmented generation"} {
 		if !strings.Contains(content, topic) {
 			t.Fatalf("lesson 18 theory does not cover %q", topic)
 		}

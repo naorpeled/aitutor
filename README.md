@@ -80,7 +80,7 @@ make build
 | 15 | Git Worktrees | Isolated workspaces for parallel development |
 | 16 | Tool Search & Deferred Tools | On-demand tool loading to save context |
 | 17 | Batch Tool Calls | Per-tool execution policies and parallel batching |
-| 18 | Building Reliable Agents | Compaction, long-term memory, and durable agent state |
+| 18 | Building Reliable Agents | Compaction, memory storage, retrieval, and RAG |
 
 ## How It Works
 
