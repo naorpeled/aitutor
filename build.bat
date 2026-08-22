@@ -1,6 +1,8 @@
 @echo off
 REM AITutor build script
-REM Converted from Makefile
+REM Windows equivalent of the Makefile
+
+setlocal
 
 if "%VERSION%"=="" set VERSION=dev
 
