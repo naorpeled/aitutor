@@ -7,7 +7,7 @@ Thanks for your interest in contributing to AITutor! This guide covers everythin
 ### Prerequisites
 
 - Go 1.23+
-- Make (optional, for convenience commands)
+- Make (optional, for convenience commands on macOS/Linux; Windows users can use `build.bat`)
 
 ### Setup
 
@@ -17,13 +17,22 @@ cd aitutor
 make build
 ```
 
-### Build & Verify
+### Build & Verify (macOS/Linux)
 
 ```bash
 make build    # builds ./aitutor binary
 make run      # go run .
 make vet      # go vet ./...
 make install  # go install .
+```
+
+### Build & Verify (Windows)
+
+```cmd
+build.bat build    # builds .\aitutor.exe binary
+build.bat run      # go run .
+build.bat vet      # go vet ./...
+build.bat install  # go install .
 ```
 
 After any change, always run:

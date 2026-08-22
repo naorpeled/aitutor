@@ -1,0 +1,46 @@
+name: Build
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+
+      - name: Build via Makefile (macOS/Linux)
+        if: runner.os != 'Windows'
+        run: |
+          make vet
+          make build
+          test -x ./aitutor
+
+      - name: Build via build.bat (Windows)
+        if: runner.os == 'Windows'
+        shell: cmd
+        run: |
+          call build.bat vet || exit /b 1
+          call build.bat build || exit /b 1
+          if not exist aitutor.exe exit /b 1
+
+      - name: Reject unknown build.bat target (Windows)
+        if: runner.os == 'Windows'
+        shell: cmd
+        run: |
+          call build.bat bogus && exit /b 1
+          exit /b 0

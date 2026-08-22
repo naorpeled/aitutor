@@ -1,0 +1,8 @@
+# Batch files must have CRLF endings — cmd.exe mis-parses LF-only .bat files,
+# particularly around goto and multi-line if blocks.
+*.bat text eol=crlf
+
+# Shell scripts and Makefiles must keep LF endings on every platform.
+*.sh       text eol=lf
+Makefile   text eol=lf
+*.go       text eol=lf

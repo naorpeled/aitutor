@@ -38,13 +38,22 @@ go install github.com/naorpeled/aitutor@latest
 aitutor
 ```
 
-### Build from source
+### Build from source (macOS/Linux)
 
 ```bash
 git clone https://github.com/naorpeled/aitutor.git
 cd aitutor
 make build
 ./aitutor
+```
+
+### Build from source (Windows)
+
+```cmd
+git clone https://github.com/naorpeled/aitutor.git
+cd aitutor
+build.bat build
+.\aitutor.exe
 ```
 
 ## Curriculum
