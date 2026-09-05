@@ -66,13 +66,19 @@ make install  # go install .
 
 ## Releasing
 
-Releases are automated via GoReleaser and GitHub Actions (`.goreleaser.yaml`, `.github/workflows/release.yml`).
+Releases are automated via GoReleaser and GitHub Actions (`.goreleaser.yml`, `.github/workflows/release.yml`).
 
 To publish a new release, trigger the `Release` workflow via `workflow_dispatch` with the desired version (e.g., `0.1.5`). The workflow:
-1. Bumps `package.json` version, commits, and pushes
-2. Creates and pushes the git tag `vX.Y.Z`
-3. GoReleaser builds cross-platform binaries (macOS/Linux, amd64/arm64), creates a GitHub Release, and updates the Homebrew formula in `naorpeled/homebrew-tap`
-4. Publishes the npm package `@aitutor/cli` with OIDC provenance
+1. Verifies the version format, then runs `go vet` / `go test` / `go build` — nothing is published if the build is broken
+2. Checks npm credentials up front, before any irreversible step
+3. Bumps `package.json` version, commits, and pushes
+4. Creates and pushes the git tag `vX.Y.Z`, then checks it out so the rest of the release publishes exactly the tagged tree
+5. GoReleaser builds cross-platform binaries (macOS/Linux/Windows, amd64/arm64), creates a GitHub Release, and updates the Homebrew formula in `naorpeled/homebrew-tap`
+6. Publishes the npm package `@aitutor/cli` with OIDC provenance
+
+### Re-running a failed release
+
+A release is four independent publishes (bump commit, git tag, GitHub Release + Homebrew, npm), so any one of them can fail on its own and leave the others already shipped. The workflow detects what already exists and skips it, so **re-dispatching the same version publishes only the missing pieces** — that is the way to repair a partial release. Do not hand-delete tags or releases to force a clean re-run.
 
 Users install via Homebrew or npm:
 ```bash
@@ -84,7 +90,7 @@ npx @aitutor/cli
 
 Secrets required:
 - `HOMEBREW_TAP_TOKEN` — grants GoReleaser permission to push formula updates to the tap repo
-- `NPM_TOKEN` — authenticates npm publish (OIDC `id-token` handles provenance signing separately)
+- `NPM_TOKEN` — authenticates npm publish. Optional: if it is unset, the workflow publishes via npm [trusted publishing](https://docs.npmjs.com/trusted-publishers) using the `id-token` OIDC grant, which needs no secret and cannot expire. Trusted publishing is preferred — npm tokens expire and a silently expired one strands a release (npm answers an unauthorized `PUT` with a `404`, not a `401`).
 
 ## Generating the Demo GIF
 
