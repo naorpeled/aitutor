@@ -95,10 +95,21 @@ jobs:
         run: |
           if [ -z "${NODE_AUTH_TOKEN:-}" ]; then
             echo "No NPM_TOKEN set — publishing via trusted publishing (OIDC)."
+            # Verify the OIDC prerequisites now, so the token-less path also
+            # fails before anything irreversible rather than at the last step.
+            have=$(npm --version)
+            if [ "$(printf '%s\n11.5.1\n' "$have" | sort -V | head -1)" != "11.5.1" ]; then
+              echo "::error::Trusted publishing needs npm >= 11.5.1, but this runner has $have. Raise node-version."
+              exit 1
+            fi
+            if [ -z "${ACTIONS_ID_TOKEN_REQUEST_URL:-}" ]; then
+              echo "::error::No OIDC token available. The job needs 'id-token: write' to publish without an NPM_TOKEN."
+              exit 1
+            fi
             exit 0
           fi
           if ! npm whoami; then
-            echo "::error::NPM_TOKEN is invalid or expired. Rotate the secret, or configure trusted publishing for @aitutor/cli at https://www.npmjs.com/package/@aitutor/cli/access"
+            echo "::error::NPM_TOKEN is invalid or expired. Rotate the secret, or configure trusted publishing for @aitutor/cli at https://www.npmjs.com/package/@aitutor/cli/access and delete the secret."
             exit 1
           fi
 
@@ -145,7 +156,16 @@ jobs:
         if: steps.todo.outputs.npm == 'todo'
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-        run: npm publish
+        run: |
+          if [ -z "${NODE_AUTH_TOKEN:-}" ] && [ -f "${NPM_CONFIG_USERCONFIG:-/nonexistent}" ]; then
+            # setup-node unconditionally writes `_authToken=${NODE_AUTH_TOKEN}`
+            # into its temporary .npmrc. With no secret that leaves an empty
+            # credential, which npm reads as a failed login rather than as no
+            # login at all — drop the line so it runs the OIDC exchange instead.
+            grep -v '_authToken' "$NPM_CONFIG_USERCONFIG" > "$NPM_CONFIG_USERCONFIG.tmp" || true
+            mv "$NPM_CONFIG_USERCONFIG.tmp" "$NPM_CONFIG_USERCONFIG"
+          fi
+          npm publish
 
       - name: Summary
         run: |

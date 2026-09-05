@@ -90,7 +90,20 @@ npx @aitutor/cli
 
 Secrets required:
 - `HOMEBREW_TAP_TOKEN` — grants GoReleaser permission to push formula updates to the tap repo
-- `NPM_TOKEN` — authenticates npm publish. Optional: if it is unset, the workflow publishes via npm [trusted publishing](https://docs.npmjs.com/trusted-publishers) using the `id-token` OIDC grant, which needs no secret and cannot expire. Trusted publishing is preferred — npm tokens expire and a silently expired one strands a release (npm answers an unauthorized `PUT` with a `404`, not a `401`).
+- `NPM_TOKEN` — **optional.** Authenticates `npm publish` when set. Leave it unset to publish via trusted publishing instead.
+
+### npm authentication
+
+The workflow supports two modes and picks whichever is configured:
+
+- **Trusted publishing (preferred, no secret).** npm mints a short-lived credential from the job's OIDC token, so there is nothing to expire or rotate, and provenance is attested automatically. This is why the job pins Node 24 — trusted publishing needs npm ≥ 11.5.1 and Node ≥ 22.14.0.
+- **`NPM_TOKEN`.** A granular access token with publish rights on `@aitutor/cli`. These expire (90 days maximum), and an expired one strands a release: npm answers an unauthorized `PUT` with a `404`, not a `401`, so it reads like a missing package rather than a dead credential.
+
+To switch from a token to trusted publishing:
+1. On npmjs.com, open `@aitutor/cli` → Settings → Trusted Publisher, choose GitHub Actions, and enter repository `naorpeled/aitutor` with workflow file `release.yml`. (The binding is to the workflow *filename*, so renaming `release.yml` breaks publishing until the entry is updated.)
+2. Delete the `NPM_TOKEN` repository secret.
+
+With no token present the workflow strips the empty `_authToken` line that `actions/setup-node` writes into its temporary `.npmrc`; npm reads an empty credential as a failed login rather than as an absent one, which would otherwise block the OIDC exchange.
 
 ## Generating the Demo GIF
 
