@@ -12,36 +12,127 @@ permissions:
   contents: write
   id-token: write
 
+# Overlapping dispatches used to race on `git push`, and the loser died with a
+# non-fast-forward rejection. Serialize releases instead.
+concurrency:
+  group: release
+  cancel-in-progress: false
+
 jobs:
   release:
     runs-on: ubuntu-latest
+    env:
+      VERSION: ${{ inputs.version }}
+      TAG: v${{ inputs.version }}
+      BRANCH: ${{ github.ref_name }}
     steps:
-      - uses: actions/checkout@v4
+      # Track the branch tip rather than the SHA that triggered the run. A re-run
+      # is pinned to the original dispatch SHA, so it would otherwise try to push
+      # a bump commit on top of a stale main and be rejected.
+      - uses: actions/checkout@v5
         with:
           fetch-depth: 0
+          fetch-tags: true
+          ref: ${{ github.ref_name }}
+
+      - name: Validate version
+        run: |
+          if ! printf '%s' "$VERSION" | grep -Eq '^[0-9]+\.[0-9]+\.[0-9]+$'; then
+            echo "::error::Version must be X.Y.Z (got '$VERSION')"
+            exit 1
+          fi
+
+      - uses: actions/setup-go@v6
+        with:
+          go-version-file: go.mod
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 24
+          registry-url: "https://registry.npmjs.org"
+
+      # A release is four separate publishes (commit, tag, GitHub release +
+      # Homebrew, npm) and any one of them can fail on its own. Record which ones
+      # already exist so each step below can be skipped, making a re-run resume a
+      # partial release instead of tripping over its own earlier progress.
+      - name: Determine what still needs publishing
+        id: todo
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          if git rev-parse -q --verify "refs/tags/$TAG" >/dev/null; then
+            echo "tag=done" >> "$GITHUB_OUTPUT"
+          else
+            echo "tag=todo" >> "$GITHUB_OUTPUT"
+          fi
+
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            echo "github_release=done" >> "$GITHUB_OUTPUT"
+          else
+            echo "github_release=todo" >> "$GITHUB_OUTPUT"
+          fi
+
+          if npm view "$(node -p "require('./package.json').name")@$VERSION" version >/dev/null 2>&1; then
+            echo "npm=done" >> "$GITHUB_OUTPUT"
+          else
+            echo "npm=todo" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Verify the build before anything is published
+        run: |
+          go vet ./...
+          go test ./...
+          go build ./...
+
+      # v0.1.9 stranded here: the bump commit, tag, GitHub release and Homebrew
+      # formula all shipped, then `npm publish` failed with a 404 because the
+      # NPM_TOKEN had expired. Fail on bad credentials before anything
+      # irreversible happens, not after.
+      - name: Check npm credentials
+        if: steps.todo.outputs.npm == 'todo'
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: |
+          if [ -z "${NODE_AUTH_TOKEN:-}" ]; then
+            echo "No NPM_TOKEN set — publishing via trusted publishing (OIDC)."
+            exit 0
+          fi
+          if ! npm whoami; then
+            echo "::error::NPM_TOKEN is invalid or expired. Rotate the secret, or configure trusted publishing for @aitutor/cli at https://www.npmjs.com/package/@aitutor/cli/access"
+            exit 1
+          fi
 
       - name: Configure git
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
 
-      - name: Update npm version
+      - name: Sync package.json version
         run: |
-          npm version ${{ inputs.version }} --no-git-tag-version
+          if [ "$(node -p "require('./package.json').version")" = "$VERSION" ]; then
+            echo "package.json is already at $VERSION."
+            exit 0
+          fi
+          npm version "$VERSION" --no-git-tag-version
           git add package.json
-          git commit -m "Bump version to ${{ inputs.version }}" || true
-          git push
+          git commit -m "Bump version to $VERSION"
+          git pull --rebase origin "$BRANCH"
+          git push origin "HEAD:$BRANCH"
 
       - name: Create and push tag
+        if: steps.todo.outputs.tag == 'todo'
         run: |
-          git tag "v${{ inputs.version }}"
-          git push origin "v${{ inputs.version }}"
+          git tag "$TAG"
+          git push origin "$TAG"
 
-      - uses: actions/setup-go@v5
-        with:
-          go-version-file: go.mod
+      # Publish exactly what the tag points at. On a resumed release the branch
+      # tip may have moved past the tag, and GoReleaser requires HEAD to be the
+      # tagged commit.
+      - name: Check out the tagged commit
+        run: git checkout --detach "$TAG"
 
       - uses: goreleaser/goreleaser-action@v6
+        if: steps.todo.outputs.github_release == 'todo'
         with:
           version: "~> v2"
           args: release --clean
@@ -49,11 +140,21 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           HOMEBREW_TAP_TOKEN: ${{ secrets.HOMEBREW_TAP_TOKEN }}
 
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 20
-          registry-url: "https://registry.npmjs.org"
-
-      - run: npm publish --provenance --access public
+      # Provenance and public access come from publishConfig in package.json.
+      - name: Publish to npm
+        if: steps.todo.outputs.npm == 'todo'
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: npm publish
+
+      - name: Summary
+        run: |
+          {
+            echo "### Release $TAG"
+            echo ""
+            echo "| Artifact | Before | Action |"
+            echo "| --- | --- | --- |"
+            echo "| Git tag | ${{ steps.todo.outputs.tag }} | ${{ steps.todo.outputs.tag == 'todo' && 'pushed' || 'skipped' }} |"
+            echo "| GitHub release + Homebrew | ${{ steps.todo.outputs.github_release }} | ${{ steps.todo.outputs.github_release == 'todo' && 'published' || 'skipped' }} |"
+            echo "| npm | ${{ steps.todo.outputs.npm }} | ${{ steps.todo.outputs.npm == 'todo' && 'published' || 'skipped' }} |"
+          } >> "$GITHUB_STEP_SUMMARY"
